@@ -14,19 +14,19 @@ function DoneInner() {
           <CheckCircle2 className="h-12 w-12 text-emerald-600" />
         </div>
         <h1 className="font-display text-3xl font-bold">Rapportino salvato!</h1>
-        <p className="text-slate-600 mt-2">Tutto è stato sincronizzato.</p>
+        <p className="text-slate-600 dark:text-slate-400 dark:text-slate-500 mt-2">Tutto è stato sincronizzato.</p>
       </div>
 
-      <div className="bg-white rounded-2xl border p-5 mt-6 space-y-2 text-sm">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border p-5 mt-6 space-y-2 text-sm">
         <div className="flex items-center gap-2 text-emerald-600"><Mail className="h-4 w-4" /> Email inviata al cliente</div>
-        <div className="flex items-center gap-2 text-slate-600"><Package className="h-4 w-4" /> Materiali scaricati dal furgone</div>
-        <div className="flex items-center gap-2 text-slate-600"><Clock className="h-4 w-4" /> Ore registrate</div>
+        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 dark:text-slate-500"><Package className="h-4 w-4" /> Materiali scaricati dal furgone</div>
+        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 dark:text-slate-500"><Clock className="h-4 w-4" /> Ore registrate</div>
       </div>
 
       <div className="mt-6 space-y-3">
         <Link href="/operatore" className="block w-full bg-ampera-700 text-white text-center rounded-xl py-4 font-semibold">Prossimo intervento <ArrowRight className="h-4 w-4 inline ml-1" /></Link>
-        {reportId && <Link href={`/print/report/${reportId}?print=1`} target="_blank" className="block w-full bg-white border text-center rounded-xl py-3 font-medium">📄 Apri PDF rapportino</Link>}
-        <Link href="/operatore" className="block w-full text-center text-slate-500 py-3"><Home className="h-4 w-4 inline" /> Torna alla home</Link>
+        {reportId && <Link href={`/print/report/${reportId}?print=1`} target="_blank" className="block w-full bg-white dark:bg-slate-900 border text-center rounded-xl py-3 font-medium">📄 Apri PDF rapportino</Link>}
+        <Link href="/operatore" className="block w-full text-center text-slate-500 dark:text-slate-400 dark:text-slate-500 py-3"><Home className="h-4 w-4 inline" /> Torna alla home</Link>
       </div>
     </div>
   );

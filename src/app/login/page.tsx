@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ThemeToggle } from "@/components/app/theme-toggle";
 import { Zap, Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 
@@ -41,17 +42,20 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors relative">
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <Zap className="h-8 w-8 text-ampera-700 fill-ampera-700/20" />
-            <span className="font-display font-bold text-2xl text-ampera-800">Ampera</span>
+            <Zap className="h-8 w-8 text-ampera-700 dark:text-ampera-400 fill-ampera-700/20 dark:fill-ampera-400/20" />
+            <span className="font-display font-bold text-2xl text-ampera-800 dark:text-ampera-300">Ampera</span>
           </Link>
-          <p className="text-sm text-slate-500">Accedi al tuo gestionale</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Accedi al tuo gestionale</p>
         </div>
 
-        <form onSubmit={onSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xl shadow-ampera-700/5 space-y-4">
+        <form onSubmit={onSubmit} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl shadow-ampera-700/5 dark:shadow-black/30 space-y-4">
           <div>
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} className="h-12" placeholder="email@example.com" />
@@ -60,7 +64,7 @@ function LoginForm() {
             <Label htmlFor="password">Password</Label>
             <div className="relative">
               <Input id="password" type={showPwd ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} className="h-12 pr-10" placeholder="••••••••" />
-              <button type="button" onClick={() => setShowPwd(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+              <button type="button" onClick={() => setShowPwd(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
                 {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
@@ -76,12 +80,12 @@ function LoginForm() {
             {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Verifico…</> : "Accedi"}
           </Button>
 
-          <div className="text-center text-xs text-slate-500 pt-2">
-            <Link href="/operatore" className="text-ampera-700 hover:underline font-medium">Sei un tecnico? Apri area operatore →</Link>
+          <div className="text-center text-xs text-slate-500 dark:text-slate-400 pt-2">
+            <Link href="/operatore" className="text-ampera-700 dark:text-ampera-400 hover:underline font-medium">Sei un tecnico? Apri area operatore →</Link>
           </div>
         </form>
 
-        <div className="text-center mt-6 text-xs text-slate-400">
+        <div className="text-center mt-6 text-xs text-slate-400 dark:text-slate-500">
           © {new Date().getFullYear()} Ampera · ISIPC · v1.0
         </div>
       </div>
@@ -91,7 +95,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-ampera-700" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950"><Loader2 className="h-6 w-6 animate-spin text-ampera-700 dark:text-ampera-400" /></div>}>
       <LoginForm />
     </Suspense>
   );

@@ -28,9 +28,9 @@ export default async function OperatoreHome() {
   return (
     <div className="max-w-md mx-auto">
       <header className="px-5 pt-6 pb-4">
-        <div className="text-xs uppercase tracking-wider font-semibold text-slate-500">{todayLabel}</div>
+        <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500">{todayLabel}</div>
         <h1 className="font-display text-3xl font-bold mt-1">{greeting}, {s.name.split(" ")[0]} 👋</h1>
-        <p className="text-slate-600 mt-1">Hai <strong>{workOrders.length}</strong> {workOrders.length === 1 ? "intervento" : "interventi"} oggi</p>
+        <p className="text-slate-600 dark:text-slate-400 dark:text-slate-500 mt-1">Hai <strong>{workOrders.length}</strong> {workOrders.length === 1 ? "intervento" : "interventi"} oggi</p>
       </header>
 
       <div className="px-5">
@@ -47,26 +47,26 @@ export default async function OperatoreHome() {
       </div>
 
       <section className="px-5 space-y-3">
-        <div className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+        <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
           <span>Interventi di oggi</span>
           <Link href="/operatore/all" className="text-ampera-700 text-xs font-medium">Vedi tutti →</Link>
         </div>
 
         {workOrders.length === 0 ? (
-          <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-8 text-center">
+          <div className="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-8 text-center">
             <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto mb-2" />
             <p className="font-semibold">Niente in vista per oggi.</p>
-            <p className="text-sm text-slate-500 mt-1">Buon riposo!</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Buon riposo!</p>
           </div>
         ) : (
           workOrders.map(w => (
-            <Link key={w.id} href={`/operatore/work-orders/${w.id}`} className={`block bg-white rounded-2xl p-4 border lift ${w.status === "IN_PROGRESS" ? "border-amber-400" : w.status === "COMPLETED" ? "border-emerald-300 opacity-70" : "border-slate-200"}`}>
+            <Link key={w.id} href={`/operatore/work-orders/${w.id}`} className={`block bg-white dark:bg-slate-900 rounded-2xl p-4 border lift ${w.status === "IN_PROGRESS" ? "border-amber-400" : w.status === "COMPLETED" ? "border-emerald-300 opacity-70" : "border-slate-200 dark:border-slate-800"}`}>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     {w.status === "IN_PROGRESS" && <div className="h-2 w-2 rounded-full bg-amber-500 pulse-glow" />}
                     {w.status === "COMPLETED" && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
-                    <span className="text-xs font-semibold text-slate-500">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500">
                       {w.scheduledDate ? new Date(w.scheduledDate).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }) : "—"}
                     </span>
                     {w.priority === "EMERGENCY" && <span className="text-[10px] font-bold uppercase bg-red-100 text-red-700 px-1.5 py-0.5 rounded">EMERGENZA</span>}
@@ -74,18 +74,18 @@ export default async function OperatoreHome() {
                   </div>
                   <div className="font-semibold text-base">{w.customer.companyName || `${w.customer.name} ${w.customer.surname || ""}`}</div>
                   {w.site && (
-                    <div className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-1">
                       <MapPin className="h-3 w-3" /> {w.site.street}, {w.site.city}
                     </div>
                   )}
-                  <div className="text-sm text-slate-700 mt-2 line-clamp-2">{w.title}</div>
+                  <div className="text-sm text-slate-700 dark:text-slate-300 mt-2 line-clamp-2">{w.title}</div>
                   {w.estimatedMinutes && (
-                    <div className="text-xs text-slate-500 flex items-center gap-1 mt-2">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-2">
                       <Clock className="h-3 w-3" /> {w.estimatedMinutes} min previsti
                     </div>
                   )}
                 </div>
-                <ChevronRight className="h-5 w-5 text-slate-400 shrink-0 mt-1" />
+                <ChevronRight className="h-5 w-5 text-slate-400 dark:text-slate-500 shrink-0 mt-1" />
               </div>
             </Link>
           ))

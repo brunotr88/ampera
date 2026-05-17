@@ -1,0 +1,17 @@
+title = "Ampera gitleaks config"
+
+[allowlist]
+description = "Allowlist for known-safe placeholders"
+paths = [
+  ".env.example",
+  "prisma/seed.ts",
+  "scripts/seed-runner.js",
+]
+regexes = [
+  '''postgres://user:password@localhost''',
+  '''smtp\.example\.com''',
+  '''admin@example\.com''',
+  '''noreply@example\.com''',
+  '''CHANGE_ME''',
+  '''0000000000000000000000000000000000000000000000000000000000000000''',
+]

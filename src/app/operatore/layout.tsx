@@ -6,7 +6,7 @@ export default async function OperatoreLayout({ children }: { children: React.Re
   const session = await auth();
   if (!session?.user) redirect("/login?callbackUrl=/operatore");
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-20 transition-colors">
       {children}
       <BottomNav />
     </div>

@@ -1,0 +1,24 @@
+#!/bin/sh
+# Block commits containing secrets (powered by gitleaks)
+# Install: brew install gitleaks  OR  download from github.com/gitleaks/gitleaks/releases
+
+if ! command -v gitleaks &> /dev/null && [ -x "$HOME/.local/bin/gitleaks" ]; then
+  GITLEAKS="$HOME/.local/bin/gitleaks"
+else
+  GITLEAKS="gitleaks"
+fi
+
+if ! command -v "$GITLEAKS" &> /dev/null; then
+  echo "⚠ gitleaks not installed - skipping leak check"
+  echo "  Install: github.com/gitleaks/gitleaks/releases or brew install gitleaks"
+  exit 0
+fi
+
+"$GITLEAKS" protect --staged --no-banner --redact
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+  echo ""
+  echo "❌ COMMIT BLOCKED by gitleaks: secrets detected in staged changes"
+  echo "   Review the output above. To bypass (NOT RECOMMENDED): git commit --no-verify"
+  exit 1
+fi
