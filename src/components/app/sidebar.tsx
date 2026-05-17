@@ -23,6 +23,8 @@ const nav = [
   { href: "/admin/warehouse", label: "Magazzino", icon: Package },
   { href: "/admin/materials", label: "Articoli", icon: BookMarked },
   { href: "/admin/contracts", label: "Manutenzioni", icon: Truck },
+  { href: "/admin/vehicles", label: "Flotta veicoli", icon: Truck },
+  { href: "/admin/assets", label: "Cespiti", icon: Building2 },
   { href: "/admin/dico", label: "DICO", icon: FileCheck },
   { href: "/admin/calendar", label: "Calendario", icon: Calendar },
   { href: "/admin/vacations", label: "Ferie & Permessi", icon: Sun },

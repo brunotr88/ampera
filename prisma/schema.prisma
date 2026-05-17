@@ -74,6 +74,8 @@ model Tenant {
   incentives   IncentiveApplication[]
   privacyDocs  PrivacyDocument[]
   userPreferences UserPreference[]
+  vehicles     Vehicle[]
+  assetAcquisitions AssetAcquisition[]
 }
 
 enum Plan {
@@ -124,6 +126,8 @@ model User {
   purchaseOrdersCreated PurchaseOrder[] @relation("PurchaseOrderCreator")
   preferences     UserPreference?
   attachmentsUploaded Attachment[]  @relation("AttachmentUploader")
+  vehiclesAssigned Vehicle[]       @relation("VehicleAssignee")
+  vehicleLogs     VehicleLog[]
 
   @@index([tenantId])
   @@index([email])
@@ -489,6 +493,7 @@ model QuoteLine {
   materialId   String?
   code         String?
   description  String
+  lineNote     String?
   quantity     Float
   unit         String   @default("pz")
   unitPrice    Float
@@ -988,6 +993,7 @@ model InvoiceLine {
   position     Int
   code         String?
   description  String
+  lineNote     String?
   quantity     Float
   unit         String   @default("pz")
   unitPrice    Float
@@ -1279,6 +1285,7 @@ model PurchaseOrderLine {
   position     Int
   materialCode String?
   description  String
+  lineNote     String?
   quantity     Float
   receivedQty  Float    @default(0)
   unit         String   @default("pz")
@@ -1644,3 +1651,140 @@ enum PrivacyDocType {
   CUSTOM
 }
 
+
+
+// =====================================================================
+// VEHICLE FLEET - Furgoni e auto aziendali con scadenze
+// =====================================================================
+
+model Vehicle {
+  id              String   @id @default(cuid())
+  tenantId        String
+  assignedToId    String?
+  plate           String
+  brand           String?
+  model           String?
+  type            VehicleType @default(VAN)
+  year            Int?
+  fuelType        String?
+  currentKm       Int      @default(0)
+  registrationDate DateTime?
+  purchaseDate    DateTime?
+  purchasePrice   Float?
+  insuranceCompany String?
+  insurancePolicyNo String?
+  insuranceExpiry DateTime?
+  inspectionExpiry DateTime?
+  maintenanceExpiry DateTime?
+  maintenanceKmDue Int?
+  bolloExpiry     DateTime?
+  tachographExpiry DateTime?
+  notes           String?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  assignedTo      User?    @relation("VehicleAssignee", fields: [assignedToId], references: [id])
+  logs            VehicleLog[]
+
+  @@unique([tenantId, plate])
+  @@index([tenantId])
+  @@index([assignedToId])
+  @@index([insuranceExpiry])
+  @@index([inspectionExpiry])
+  @@index([maintenanceExpiry])
+}
+
+enum VehicleType {
+  VAN
+  TRUCK
+  CAR
+  ELECTRIC
+  MOTORCYCLE
+  TRAILER
+  OTHER
+}
+
+model VehicleLog {
+  id          String   @id @default(cuid())
+  vehicleId   String
+  userId      String?
+  type        VehicleLogType
+  date        DateTime
+  km          Int?
+  cost        Float?
+  description String
+  invoiceRef  String?
+  attachmentUrl String?
+  nextDueDate DateTime?
+  nextDueKm   Int?
+  createdAt   DateTime @default(now())
+
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@index([vehicleId])
+  @@index([type])
+  @@index([date])
+}
+
+enum VehicleLogType {
+  REFUEL
+  MAINTENANCE
+  INSPECTION
+  INSURANCE_RENEWAL
+  TIRE_CHANGE
+  REPAIR
+  CAR_WASH
+  TOLL
+  PARKING
+  KM_LOG
+  ACCIDENT
+  OTHER
+}
+
+// =====================================================================
+// ASSET ACQUISITIONS - Cespiti (beni strumentali) da fatture di acquisto
+// =====================================================================
+
+model AssetAcquisition {
+  id              String   @id @default(cuid())
+  tenantId        String
+  code            String
+  name            String
+  description     String?
+  category        String?
+  serialNumber    String?
+  acquisitionDate DateTime
+  purchasePrice   Float
+  vatRate         Float    @default(22)
+  amortizationYears Int    @default(5)
+  amortizationStartDate DateTime?
+  residualValue   Float    @default(0)
+  status          AssetStatus @default(ACTIVE)
+  location        String?
+  supplierId      String?
+  invoiceRef      String?
+  notes           String?
+  disposalDate    DateTime?
+  disposalValue   Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([category])
+  @@index([status])
+}
+
+enum AssetStatus {
+  ACTIVE
+  DISPOSED
+  SOLD
+  WRITTEN_OFF
+  IN_REPAIR
+}
