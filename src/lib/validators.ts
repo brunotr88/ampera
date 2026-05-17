@@ -1,0 +1,255 @@
+import { z } from "zod";
+
+export const CustomerCreate = z.object({
+  type: z.enum(["PRIVATE", "BUSINESS", "CONDOMINIUM", "PUBLIC_ADMIN"]),
+  name: z.string().min(1).max(120),
+  surname: z.string().max(120).optional().nullable(),
+  companyName: z.string().max(200).optional().nullable(),
+  fiscalCode: z.string().max(32).optional().nullable(),
+  vatNumber: z.string().max(32).optional().nullable(),
+  sdiCode: z.string().max(20).optional().nullable(),
+  pec: z.string().email().optional().nullable().or(z.literal("").transform(() => null)),
+  email: z.string().email().optional().nullable().or(z.literal("").transform(() => null)),
+  phone: z.string().max(40).optional().nullable(),
+  mobile: z.string().max(40).optional().nullable(),
+  notes: z.string().max(4000).optional().nullable(),
+  tags: z.array(z.string()).default([]),
+  color: z.string().max(16).optional().nullable(),
+  status: z.enum(["ACTIVE", "PROSPECT", "INACTIVE", "BLOCKED"]).default("ACTIVE"),
+  gdprConsent: z.boolean().default(false),
+  marketingConsent: z.boolean().default(false),
+  defaultDiscountPercent: z.coerce.number().min(0).max(100).default(0),
+});
+export type CustomerCreateInput = z.infer<typeof CustomerCreate>;
+
+export const AddressCreate = z.object({
+  label: z.string().max(80).optional().nullable(),
+  type: z.enum(["MAIN", "LEGAL", "OPERATIONAL", "BILLING"]).default("MAIN"),
+  street: z.string().min(1).max(200),
+  city: z.string().min(1).max(120),
+  province: z.string().max(8).optional().nullable(),
+  zip: z.string().max(10).optional().nullable(),
+  country: z.string().max(4).default("IT"),
+  lat: z.coerce.number().optional().nullable(),
+  lon: z.coerce.number().optional().nullable(),
+  isDefault: z.boolean().default(false),
+});
+
+export const PlantCreate = z.object({
+  customerId: z.string().min(1),
+  siteId: z.string().nullable().optional(),
+  code: z.string().max(40).optional().nullable(),
+  name: z.string().min(1).max(160),
+  type: z.enum(["CIVIL", "INDUSTRIAL", "PHOTOVOLTAIC", "DOMOTIC", "EMERGENCY", "TLC", "FIRE_ALARM", "HVAC", "CHARGING_STATION"]),
+  installDate: z.coerce.date().optional().nullable(),
+  lastCheckDate: z.coerce.date().optional().nullable(),
+  nextCheckDate: z.coerce.date().optional().nullable(),
+  ratedPowerKw: z.coerce.number().optional().nullable(),
+  voltageV: z.coerce.number().int().optional().nullable(),
+  notes: z.string().max(4000).optional().nullable(),
+});
+
+export const ReportCreate = z.object({
+  workOrderId: z.string().nullable().optional(),
+  customerId: z.string().min(1),
+  siteId: z.string().nullable().optional(),
+  plantId: z.string().nullable().optional(),
+  projectId: z.string().nullable().optional(),
+  workType: z.string().max(80).optional().nullable(),
+  cause: z.string().max(80).optional().nullable(),
+  description: z.string().max(8000).optional().nullable(),
+  recommendations: z.string().max(4000).optional().nullable(),
+  startedAt: z.coerce.date().optional().nullable(),
+  endedAt: z.coerce.date().optional().nullable(),
+  totalHours: z.coerce.number().min(0).optional().nullable(),
+  travelKm: z.coerce.number().min(0).optional().nullable(),
+  startLat: z.coerce.number().optional().nullable(),
+  startLon: z.coerce.number().optional().nullable(),
+  endLat: z.coerce.number().optional().nullable(),
+  endLon: z.coerce.number().optional().nullable(),
+  contactPerson: z.string().max(120).optional().nullable(),
+  signatureDataUrl: z.string().optional().nullable(),
+  signerName: z.string().max(120).optional().nullable(),
+  signedAt: z.coerce.date().optional().nullable(),
+  clientId: z.string().optional().nullable(),
+  materials: z.array(z.object({
+    materialId: z.string().nullable().optional(),
+    code: z.string().optional().nullable(),
+    description: z.string(),
+    quantity: z.coerce.number(),
+    unit: z.string().default("pz"),
+    unitPrice: z.coerce.number().default(0),
+    warehouseId: z.string().nullable().optional(),
+  })).default([]),
+  timeEntries: z.array(z.object({
+    userId: z.string(),
+    hours: z.coerce.number().min(0),
+    hourlyRate: z.coerce.number().optional().nullable(),
+    notes: z.string().optional().nullable(),
+  })).default([]),
+  photosBase64: z.array(z.object({
+    dataUrl: z.string(),
+    label: z.string().optional().nullable(),
+    lat: z.coerce.number().optional().nullable(),
+    lon: z.coerce.number().optional().nullable(),
+  })).default([]),
+  finalize: z.boolean().default(false),
+});
+
+export const QuoteCreate = z.object({
+  customerId: z.string().min(1),
+  projectId: z.string().nullable().optional(),
+  title: z.string().min(1).max(200),
+  description: z.string().optional().nullable(),
+  validUntil: z.coerce.date().optional().nullable(),
+  defaultVatRate: z.coerce.number().min(0).max(50).default(22),
+  discountPercent: z.coerce.number().min(0).max(100).default(0),
+  terms: z.string().optional().nullable(),
+  internalNotes: z.string().optional().nullable(),
+  lines: z.array(z.object({
+    materialId: z.string().nullable().optional(),
+    code: z.string().optional().nullable(),
+    description: z.string().min(1),
+    quantity: z.coerce.number().min(0),
+    unit: z.string().default("pz"),
+    unitPrice: z.coerce.number(),
+    discountPercent: z.coerce.number().min(0).max(100).default(0),
+    vatRate: z.coerce.number().min(0).max(50).default(22),
+  })).min(1),
+});
+
+export const InvoiceCreate = z.object({
+  customerId: z.string().min(1),
+  projectId: z.string().nullable().optional(),
+  type: z.enum(["INVOICE", "CREDIT_NOTE", "PROFORMA", "TD24_DEFERRED", "TD20_SELF"]).default("INVOICE"),
+  series: z.string().optional().nullable(),
+  issueDate: z.coerce.date().default(() => new Date()),
+  dueDate: z.coerce.date().optional().nullable(),
+  paymentMethod: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  withholdingTax: z.coerce.number().min(0).default(0),
+  splitPayment: z.boolean().default(false),
+  reverseCharge: z.boolean().default(false),
+  stampDuty: z.coerce.number().min(0).default(0),
+  lines: z.array(z.object({
+    code: z.string().optional().nullable(),
+    description: z.string().min(1),
+    quantity: z.coerce.number(),
+    unit: z.string().default("pz"),
+    unitPrice: z.coerce.number(),
+    discountPercent: z.coerce.number().min(0).max(100).default(0),
+    vatRate: z.coerce.number().min(0).max(50).default(22),
+  })).min(1),
+});
+
+export const PurchaseOrderCreate = z.object({
+  supplierId: z.string().min(1),
+  expectedDate: z.coerce.date().optional().nullable(),
+  projectId: z.string().nullable().optional(),
+  warehouseId: z.string().nullable().optional(),
+  shippingCost: z.coerce.number().min(0).default(0),
+  notes: z.string().optional().nullable(),
+  lines: z.array(z.object({
+    materialCode: z.string().optional().nullable(),
+    description: z.string().min(1),
+    quantity: z.coerce.number().min(0),
+    unit: z.string().default("pz"),
+    unitPrice: z.coerce.number().min(0),
+    vatRate: z.coerce.number().min(0).max(50).default(22),
+  })).min(1),
+});
+
+export const CashbookEntryCreate = z.object({
+  cashboxId: z.string().min(1),
+  date: z.coerce.date(),
+  direction: z.enum(["IN", "OUT"]),
+  amount: z.coerce.number().positive(),
+  category: z.string().optional().nullable(),
+  description: z.string().min(1).max(400),
+  counterpart: z.string().optional().nullable(),
+  invoiceId: z.string().optional().nullable(),
+  customerId: z.string().optional().nullable(),
+  supplierId: z.string().optional().nullable(),
+  documentRef: z.string().optional().nullable(),
+  paymentMethod: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+});
+
+export const VacationRequestCreate = z.object({
+  userId: z.string().min(1),
+  type: z.enum(["VACATION", "PERMIT", "ILLNESS", "TRAINING", "LEAVE_104", "PARENTAL", "OTHER"]).default("VACATION"),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  halfDayStart: z.boolean().default(false),
+  halfDayEnd: z.boolean().default(false),
+  reason: z.string().optional().nullable(),
+  notifyDaysBefore: z.coerce.number().int().min(0).max(60).default(7),
+});
+
+export const CalendarEventCreate = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().optional().nullable(),
+  type: z.enum(["MEETING", "CALL", "TASK", "INSPECTION", "DEADLINE", "REMINDER", "OTHER"]).default("MEETING"),
+  startsAt: z.coerce.date(),
+  endsAt: z.coerce.date(),
+  allDay: z.boolean().default(false),
+  location: z.string().optional().nullable(),
+  color: z.string().optional().nullable(),
+  customerId: z.string().optional().nullable(),
+  projectId: z.string().optional().nullable(),
+  workOrderId: z.string().optional().nullable(),
+  reminderMinutesBefore: z.coerce.number().int().min(0).default(60),
+  recurrenceRule: z.string().optional().nullable(),
+});
+
+export const WorkOrderCreate = z.object({
+  customerId: z.string().min(1),
+  siteId: z.string().nullable().optional(),
+  plantId: z.string().nullable().optional(),
+  projectId: z.string().nullable().optional(),
+  assignedToId: z.string().nullable().optional(),
+  title: z.string().min(1).max(200),
+  description: z.string().optional().nullable(),
+  priority: z.enum(["LOW", "NORMAL", "URGENT", "EMERGENCY"]).default("NORMAL"),
+  scheduledDate: z.coerce.date().optional().nullable(),
+  scheduledEndDate: z.coerce.date().optional().nullable(),
+  estimatedMinutes: z.coerce.number().int().optional().nullable(),
+  type: z.string().optional().nullable(),
+  contactPerson: z.string().optional().nullable(),
+});
+
+export const MaterialCreate = z.object({
+  code: z.string().min(1).max(40),
+  metelCode: z.string().optional().nullable(),
+  barcode: z.string().optional().nullable(),
+  name: z.string().min(1).max(200),
+  brand: z.string().optional().nullable(),
+  category: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
+  unit: z.string().default("pz"),
+  unitPrice: z.coerce.number().min(0).default(0),
+  purchasePrice: z.coerce.number().min(0).default(0),
+  vatRate: z.coerce.number().min(0).max(50).default(22),
+  marginPercent: z.coerce.number().min(0).default(30),
+  stockMin: z.coerce.number().min(0).default(0),
+});
+
+export const ProjectCreate = z.object({
+  customerId: z.string().min(1),
+  code: z.string().min(1).max(40),
+  name: z.string().min(1).max(200),
+  description: z.string().optional().nullable(),
+  startDate: z.coerce.date().optional().nullable(),
+  endDate: z.coerce.date().optional().nullable(),
+  budgetMaterials: z.coerce.number().min(0).default(0),
+  budgetLabor: z.coerce.number().min(0).default(0),
+  budgetIndirect: z.coerce.number().min(0).default(0),
+});
+
+export const UserCreate = z.object({
+  email: z.string().email(),
+  name: z.string().min(1).max(120),
+  role: z.enum(["OWNER", "ADMIN", "OFFICE", "TECHNICIAN", "VIEWER"]).default("TECHNICIAN"),
+  password: z.string().min(10),
+  phoneNumber: z.string().optional().nullable(),
+});
