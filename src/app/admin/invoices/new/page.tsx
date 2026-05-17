@@ -21,7 +21,15 @@ function NewInvoiceForm() {
     customerId: "", type: "INVOICE", issueDate: new Date().toISOString().slice(0, 10),
     withholdingTax: 0, splitPayment: false, reverseCharge: false, stampDuty: 0,
   });
-  const [lines, setLines] = useState<any[]>([{ description: "", quantity: 1, unit: "pz", unitPrice: 0, discountPercent: 0, vatRate: 22 }]);
+  const [lines, setLines] = useState<any[]>([{ description: "", quantity: 1, unit: "pz", unitPrice: 0, discountPercent: 0, discountAmount: 0, vatRate: 22 }]);
+
+  const VAT_OPTIONS = [
+    { rate: 22, label: "22% standard" },
+    { rate: 10, label: "10% ristrutturazione/manutenzione" },
+    { rate: 4, label: "4% accessibilità/prima casa" },
+    { rate: 5, label: "5% sociale" },
+    { rate: 0, label: "0% (esente/non imponibile)" },
+  ];
 
   useEffect(() => {
     fetch("/api/customers").then(r => r.json()).then(d => setCustomers(d.customers || []));
@@ -34,8 +42,14 @@ function NewInvoiceForm() {
     }
   }, [sp]);
 
-  const subtotal = lines.reduce((s, l) => s + l.quantity * l.unitPrice * (1 - l.discountPercent / 100), 0);
-  const vat = lines.reduce((s, l) => s + l.quantity * l.unitPrice * (1 - l.discountPercent / 100) * (l.vatRate / 100), 0);
+  const computed = lines.map(l => {
+    const gross = l.quantity * l.unitPrice;
+    const afterPct = gross * (1 - l.discountPercent / 100);
+    const imp = Math.max(0, afterPct - (Number(l.discountAmount) || 0));
+    return { imp, vat: imp * (l.vatRate / 100), total: imp * (1 + l.vatRate / 100) };
+  });
+  const subtotal = computed.reduce((s, l) => s + l.imp, 0);
+  const vat = computed.reduce((s, l) => s + l.vat, 0);
   const total = subtotal + vat + Number(form.stampDuty || 0) - Number(form.withholdingTax || 0);
 
   async function submit(e: React.FormEvent) {
@@ -87,18 +101,31 @@ function NewInvoiceForm() {
         <div>
           <div className="flex justify-between items-center mb-2">
             <Label className="m-0">Righe fattura</Label>
-            <Button type="button" size="sm" variant="outline" onClick={() => setLines([...lines, { description: "", quantity: 1, unit: "pz", unitPrice: 0, discountPercent: 0, vatRate: 22 }])}><Plus className="h-3 w-3" /> Aggiungi riga</Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => setLines([...lines, { description: "", quantity: 1, unit: "pz", unitPrice: 0, discountPercent: 0, discountAmount: 0, vatRate: 22 }])}><Plus className="h-3 w-3" /> Aggiungi riga</Button>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {lines.map((l, i) => (
-              <div key={i} className="grid grid-cols-12 gap-2 items-start p-3 bg-muted/30 rounded-lg">
-                <Input className="col-span-12 md:col-span-5" placeholder="Descrizione" value={l.description} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, description: e.target.value } : x))} required />
-                <Input className="col-span-3 md:col-span-1" type="number" step="0.01" value={l.quantity} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, quantity: Number(e.target.value) } : x))} />
-                <Input className="col-span-3 md:col-span-1" value={l.unit} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, unit: e.target.value } : x))} />
-                <Input className="col-span-3 md:col-span-2" type="number" step="0.01" value={l.unitPrice} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, unitPrice: Number(e.target.value) } : x))} />
-                <Input className="col-span-3 md:col-span-1" type="number" step="0.5" value={l.discountPercent} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, discountPercent: Number(e.target.value) } : x))} />
-                <Input className="col-span-3 md:col-span-1" type="number" step="1" value={l.vatRate} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, vatRate: Number(e.target.value) } : x))} />
-                <Button type="button" variant="ghost" size="icon" className="col-span-3 md:col-span-1" onClick={() => setLines(ls => ls.filter((_, idx) => idx !== i))}><Trash2 className="h-4 w-4" /></Button>
+              <div key={i} className="p-3 bg-muted/30 rounded-lg space-y-2">
+                <div className="grid grid-cols-12 gap-2 items-start">
+                  <Input className="col-span-12 md:col-span-6" placeholder="Descrizione" value={l.description} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, description: e.target.value } : x))} required />
+                  <Input className="col-span-3 md:col-span-1" type="number" step="0.01" placeholder="Qta" value={l.quantity} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, quantity: Number(e.target.value) } : x))} />
+                  <Input className="col-span-3 md:col-span-1" placeholder="UM" value={l.unit} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, unit: e.target.value } : x))} />
+                  <Input className="col-span-3 md:col-span-2" type="number" step="0.01" placeholder="Prezzo €" value={l.unitPrice} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, unitPrice: Number(e.target.value) } : x))} />
+                  <div className="col-span-3 md:col-span-2 text-right font-semibold pt-2">{formatCurrency(computed[i]?.total || 0)}</div>
+                </div>
+                <div className="grid grid-cols-12 gap-2 items-center text-xs">
+                  <div className="col-span-2 text-muted-foreground">Sconto:</div>
+                  <Input className="col-span-2" type="number" step="0.5" min="0" max="100" placeholder="% sconto" value={l.discountPercent} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, discountPercent: Number(e.target.value) } : x))} />
+                  <Input className="col-span-2" type="number" step="0.01" min="0" placeholder="€ sconto" value={l.discountAmount} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, discountAmount: Number(e.target.value) } : x))} />
+                  <div className="col-span-1 text-muted-foreground">IVA:</div>
+                  <select className="col-span-4 h-9 rounded-md border border-input bg-background px-2" value={l.vatRate} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, vatRate: Number(e.target.value) } : x))}>
+                    {VAT_OPTIONS.map(o => <option key={o.rate} value={o.rate}>{o.label}</option>)}
+                  </select>
+                  <Button type="button" variant="ghost" size="icon" className="col-span-1 h-9 w-9" onClick={() => setLines(ls => ls.filter((_, idx) => idx !== i))}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+                {l.vatRate === 0 && (
+                  <Input placeholder="Nota IVA (es. art. 8/A DPR 633/72 non imponibile)" value={l.vatNote || ""} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, vatNote: e.target.value } : x))} className="text-xs" />
+                )}
               </div>
             ))}
           </div>

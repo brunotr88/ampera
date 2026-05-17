@@ -114,7 +114,10 @@ export const QuoteCreate = z.object({
     unit: z.string().default("pz"),
     unitPrice: z.coerce.number(),
     discountPercent: z.coerce.number().min(0).max(100).default(0),
+    discountAmount: z.coerce.number().min(0).default(0),
     vatRate: z.coerce.number().min(0).max(50).default(22),
+    vatExemptionCode: z.string().optional().nullable(),
+    vatNote: z.string().optional().nullable(),
   })).min(1),
 });
 
@@ -138,7 +141,11 @@ export const InvoiceCreate = z.object({
     unit: z.string().default("pz"),
     unitPrice: z.coerce.number(),
     discountPercent: z.coerce.number().min(0).max(100).default(0),
+    discountAmount: z.coerce.number().min(0).default(0),
     vatRate: z.coerce.number().min(0).max(50).default(22),
+    vatExemptionCode: z.string().optional().nullable(),
+    vatNote: z.string().optional().nullable(),
+    incentiveCode: z.string().optional().nullable(),
   })).min(1),
 });
 

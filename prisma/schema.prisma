@@ -69,6 +69,11 @@ model Tenant {
   reminders    Reminder[]
   paymentTerms PaymentTerm[]
   bankAccounts BankAccount[]
+  attachments  Attachment[]
+  faqs         Faq[]
+  incentives   IncentiveApplication[]
+  privacyDocs  PrivacyDocument[]
+  userPreferences UserPreference[]
 }
 
 enum Plan {
@@ -117,9 +122,31 @@ model User {
   ownedEvents     CalendarEvent[]   @relation("EventOwner")
   reminders       Reminder[]
   purchaseOrdersCreated PurchaseOrder[] @relation("PurchaseOrderCreator")
+  preferences     UserPreference?
+  attachmentsUploaded Attachment[]  @relation("AttachmentUploader")
 
   @@index([tenantId])
   @@index([email])
+}
+
+model UserPreference {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  tenantId        String
+  theme           String   @default("system")
+  language        String   @default("it")
+  density         String   @default("comfortable")
+  emailDigest     Boolean  @default(true)
+  hideTips        Boolean  @default(false)
+  defaultLandingPath String?
+  shortcutsEnabled Boolean @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
 }
 
 enum Role {
@@ -466,7 +493,10 @@ model QuoteLine {
   unit         String   @default("pz")
   unitPrice    Float
   discountPercent Float @default(0)
+  discountAmount Float  @default(0)
   vatRate      Float    @default(22)
+  vatExemptionCode String?
+  vatNote      String?
   total        Float
   createdAt    DateTime @default(now())
 
@@ -962,7 +992,11 @@ model InvoiceLine {
   unit         String   @default("pz")
   unitPrice    Float
   discountPercent Float @default(0)
+  discountAmount Float  @default(0)
   vatRate      Float    @default(22)
+  vatExemptionCode String?
+  vatNote      String?
+  incentiveCode String?
   total        Float
 
   invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
@@ -1396,5 +1430,217 @@ enum ReminderStatus {
   SENT
   FAILED
   CANCELLED
+}
+
+// =====================================================================
+// ATTACHMENTS - Polymorphic file storage (PDF, images, docs) for any entity
+// =====================================================================
+
+model Attachment {
+  id           String         @id @default(cuid())
+  tenantId     String
+  entityType   String
+  entityId     String
+  fileName     String
+  url          String
+  category     AttachmentCategory @default(GENERAL)
+  mimeType     String?
+  sizeBytes    Int            @default(0)
+  width        Int?
+  height       Int?
+  uploadedById String?
+  notes        String?
+  takenAt      DateTime?
+  lat          Float?
+  lon          Float?
+  createdAt    DateTime       @default(now())
+
+  tenant       Tenant         @relation(fields: [tenantId], references: [id])
+  uploadedBy   User?          @relation("AttachmentUploader", fields: [uploadedById], references: [id])
+
+  @@index([tenantId])
+  @@index([entityType, entityId])
+  @@index([category])
+}
+
+enum AttachmentCategory {
+  GENERAL
+  PHOTO
+  PDF
+  DICO
+  CERTIFICATE
+  CONTRACT
+  PRIVACY_CONSENT
+  ID_DOCUMENT
+  INVOICE_ATTACHMENT
+  PROJECT_PLAN
+  TECHNICAL_DRAWING
+  SAFETY_DOC
+  REPORT_PDF
+  OTHER
+}
+
+// =====================================================================
+// FAQ - Knowledge base interno e per portale cliente
+// =====================================================================
+
+model Faq {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  category    String?
+  question    String
+  answer      String
+  audience    FaqAudience @default(ADMIN)
+  tags        String[] @default([])
+  views       Int      @default(0)
+  helpful     Int      @default(0)
+  notHelpful  Int      @default(0)
+  sortOrder   Int      @default(0)
+  isGlobal    Boolean  @default(false)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, audience])
+  @@index([category])
+  @@index([isGlobal])
+}
+
+enum FaqAudience {
+  ADMIN
+  OPERATOR
+  CUSTOMER
+  PUBLIC
+}
+
+// =====================================================================
+// ITALIAN TAX INCENTIVES - Agevolazioni fiscali per ristrutturazioni
+// =====================================================================
+
+model IncentiveApplication {
+  id              String   @id @default(cuid())
+  tenantId        String
+  customerId      String?
+  plantId         String?
+  projectId       String?
+  invoiceId       String?
+  code            String
+  type            IncentiveType
+  workDescription String
+  workStartDate   DateTime?
+  workEndDate     DateTime?
+  totalAmount     Float    @default(0)
+  deductiblePercentage Float
+  deductibleAmount Float   @default(0)
+  yearsOfRecovery Int      @default(10)
+  yearlyAmount    Float    @default(0)
+  status          IncentiveStatus @default(DRAFT)
+  bankTransferRef String?
+  bankTransferDate DateTime?
+  bankTransferDescription String?
+  enéaProtocol    String?
+  enéaSubmittedAt DateTime?
+  agenciaProtocol String?
+  cessionAccredito Boolean @default(false)
+  sconfoFattura   Boolean  @default(false)
+  technicalAsseveration Boolean @default(false)
+  notes           String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([type])
+  @@index([status])
+}
+
+enum IncentiveType {
+  RESTRUCTURING_50
+  ECOBONUS_65
+  ECOBONUS_50
+  FURNITURE_BONUS_50
+  SEISMABONUS_50
+  SEISMABONUS_70
+  SEISMABONUS_80
+  SEISMABONUS_85
+  GREEN_BONUS_36
+  BARRIER_REMOVAL_75
+  CHARGING_STATION_80
+  SUPERBONUS_110
+  SUPERBONUS_90
+  SUPERBONUS_70
+  SUPERBONUS_65
+  CONTO_TERMICO
+  CONTO_TERMICO_PA
+  ELECTRIC_RENOVATION_50
+  DOMOTIC_BONUS_65
+  PV_SELF_CONSUMPTION
+  OTHER
+}
+
+enum IncentiveStatus {
+  DRAFT
+  ELIGIBLE
+  DOCUMENTS_READY
+  BANK_TRANSFER_DONE
+  ENEA_SUBMITTED
+  COMPLETED
+  CANCELLED
+}
+
+// =====================================================================
+// PRIVACY DOCUMENTS - GDPR informative + consensi tracciati
+// =====================================================================
+
+model PrivacyDocument {
+  id           String   @id @default(cuid())
+  tenantId     String
+  type         PrivacyDocType
+  audience     String
+  subjectName  String?
+  subjectEmail String?
+  subjectFiscalCode String?
+  customerId   String?
+  userId       String?
+  version      String   @default("1.0")
+  contentHtml  String?
+  signedAt     DateTime?
+  signatureDataUrl String?
+  signerName   String?
+  ipAddress    String?
+  userAgent    String?
+  consentsJson Json?
+  pdfUrl       String?
+  expiresAt    DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([userId])
+  @@index([type])
+}
+
+enum PrivacyDocType {
+  CUSTOMER_INFORMATIVE
+  CUSTOMER_CONSENT
+  EMPLOYEE_INFORMATIVE
+  EMPLOYEE_CONSENT
+  CONTRACTOR_NDA
+  MARKETING_CONSENT
+  COOKIE_BANNER
+  DATA_PROCESSING_AGREEMENT
+  CCTV_INFORMATIVE
+  GEO_TRACKING_CONSENT
+  CUSTOM
 }
 

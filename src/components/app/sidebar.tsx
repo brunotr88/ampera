@@ -4,7 +4,8 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Users, Wrench, FileText, ClipboardList, Calendar, Package, Truck, FileCheck, Receipt,
-  TrendingUp, Settings, LogOut, Zap, Building2, BadgeEuro, ShoppingCart, BookMarked, CalendarDays, Sun, BarChart3
+  TrendingUp, Settings, LogOut, Zap, Building2, BadgeEuro, ShoppingCart, BookMarked, CalendarDays, Sun, BarChart3,
+  Award, Shield, BookOpen
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -25,6 +26,9 @@ const nav = [
   { href: "/admin/dico", label: "DICO", icon: FileCheck },
   { href: "/admin/calendar", label: "Calendario", icon: Calendar },
   { href: "/admin/vacations", label: "Ferie & Permessi", icon: Sun },
+  { href: "/admin/incentives", label: "Agevolazioni", icon: Award },
+  { href: "/admin/privacy", label: "Privacy & GDPR", icon: Shield },
+  { href: "/admin/faq", label: "FAQ & Guide", icon: BookOpen },
   { href: "/admin/reports/kpi", label: "Report KPI", icon: BarChart3 },
   { href: "/admin/settings", label: "Impostazioni", icon: Settings },
 ];

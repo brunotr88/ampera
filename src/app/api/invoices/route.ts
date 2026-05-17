@@ -28,20 +28,29 @@ export async function POST(req: NextRequest) {
   const last = await db.invoice.findFirst({ where: { tenantId: s.tenantId, type: data.type }, orderBy: { createdAt: "desc" }, select: { number: true } });
   const number = nextDocumentNumber(last?.number);
 
-  const totals = calcVatBreakdown(data.lines.map(l => ({ quantity: l.quantity, unitPrice: l.unitPrice, discountPercent: l.discountPercent, vatRate: l.vatRate })));
-  const grand = round2(totals.subtotal + totals.vat + data.stampDuty - data.withholdingTax);
+  const lineComputed = data.lines.map(l => {
+    const gross = l.quantity * l.unitPrice;
+    const afterPct = gross * (1 - l.discountPercent / 100);
+    const imponibile = Math.max(0, afterPct - (l.discountAmount || 0));
+    const vat = imponibile * (l.vatRate / 100);
+    return { imponibile, vat, total: imponibile + vat };
+  });
+  const subtotal = round2(lineComputed.reduce((s, l) => s + l.imponibile, 0));
+  const vatTotal = round2(lineComputed.reduce((s, l) => s + l.vat, 0));
+  const grand = round2(subtotal + vatTotal + data.stampDuty - data.withholdingTax);
 
   const invoice = await db.invoice.create({
     data: {
       tenantId: s.tenantId, customerId: data.customerId, projectId: data.projectId,
       type: data.type, number, series: data.series, issueDate: data.issueDate, dueDate: data.dueDate,
       paymentMethod: data.paymentMethod, notes: data.notes,
-      subtotal: totals.subtotal, vatTotal: totals.vat, total: grand,
+      subtotal, vatTotal, total: grand,
       withholdingTax: data.withholdingTax, splitPayment: data.splitPayment, reverseCharge: data.reverseCharge, stampDuty: data.stampDuty,
       lines: { create: data.lines.map((l, i) => ({
         position: i + 1, code: l.code, description: l.description, quantity: l.quantity, unit: l.unit,
-        unitPrice: l.unitPrice, discountPercent: l.discountPercent, vatRate: l.vatRate,
-        total: round2(l.quantity * l.unitPrice * (1 - l.discountPercent / 100) * (1 + l.vatRate / 100)),
+        unitPrice: l.unitPrice, discountPercent: l.discountPercent, discountAmount: l.discountAmount || 0,
+        vatRate: l.vatRate, vatExemptionCode: l.vatExemptionCode, vatNote: l.vatNote, incentiveCode: l.incentiveCode,
+        total: round2(lineComputed[i].total),
       })) },
     },
   });

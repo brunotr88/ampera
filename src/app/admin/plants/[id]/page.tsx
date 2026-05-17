@@ -6,7 +6,9 @@ import { PageHeader } from "@/components/app/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Attachments } from "@/components/app/attachments";
 import { formatDate } from "@/lib/utils";
+import { HELP } from "@/lib/page-help-data";
 import { FileCheck, Wrench, ClipboardList } from "lucide-react";
 
 export default async function PlantDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -27,7 +29,7 @@ export default async function PlantDetailPage({ params }: { params: Promise<{ id
 
   return (
     <div className="space-y-6">
-      <PageHeader title={plant.name} description={`${plant.type} · Cliente: ${plant.customer.companyName || plant.customer.name}`} back="/admin/plants"
+      <PageHeader title={plant.name} description={`${plant.type} · Cliente: ${plant.customer.companyName || plant.customer.name}`} back="/admin/plants" help={HELP.plants}
         actions={
           <div className="flex gap-2">
             <Button asChild variant="outline" size="sm"><Link href={`/admin/dico/new?plantId=${plant.id}`}><FileCheck className="h-4 w-4" /> Nuova DICO</Link></Button>
@@ -88,6 +90,8 @@ export default async function PlantDetailPage({ params }: { params: Promise<{ id
           )}
         </CardContent>
       </Card>
+
+      <Attachments entityType="Plant" entityId={plant.id} title="Documenti tecnici (schemi, planimetrie, foto, DICO)" accept=".pdf,image/*,.dwg,.dxf" />
     </div>
   );
 }

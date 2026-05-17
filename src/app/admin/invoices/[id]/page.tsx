@@ -6,7 +6,9 @@ import { PageHeader } from "@/components/app/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Attachments } from "@/components/app/attachments";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { HELP } from "@/lib/page-help-data";
 import { Printer, FileCode2, Banknote } from "lucide-react";
 
 export default async function InvoiceDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -17,7 +19,7 @@ export default async function InvoiceDetail({ params }: { params: Promise<{ id: 
 
   return (
     <div className="space-y-6">
-      <PageHeader title={`Fattura ${inv.number}`} description={`${inv.customer.companyName || inv.customer.name} · ${formatDate(inv.issueDate)}`} back="/admin/invoices"
+      <PageHeader title={`Fattura ${inv.number}`} description={`${inv.customer.companyName || inv.customer.name} · ${formatDate(inv.issueDate)}`} back="/admin/invoices" help={HELP.invoices}
         actions={
           <div className="flex gap-2">
             <Button asChild variant="outline"><Link href={`/print/invoice/${inv.id}?print=1`} target="_blank"><Printer className="h-4 w-4" /> Stampa</Link></Button>
@@ -65,6 +67,8 @@ export default async function InvoiceDetail({ params }: { params: Promise<{ id: 
       </div>
 
       {inv.notes && <Card><CardHeader><CardTitle>Note</CardTitle></CardHeader><CardContent><div className="whitespace-pre-wrap text-sm">{inv.notes}</div></CardContent></Card>}
+
+      <Attachments entityType="Invoice" entityId={inv.id} title="Allegati fattura (ordine, DDT, conferme)" accept=".pdf,image/*,.xml" />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Attachments } from "@/components/app/attachments";
 import { formatDateTime } from "@/lib/utils";
 
 export default async function WODetail({ params }: { params: Promise<{ id: string }> }) {
@@ -49,6 +50,8 @@ export default async function WODetail({ params }: { params: Promise<{ id: strin
           </CardContent>
         </Card>
       </div>
+
+      <Attachments entityType="WorkOrder" entityId={wo.id} title="Allegati intervento" accept=".pdf,image/*" />
     </div>
   );
 }

@@ -6,8 +6,10 @@ import { PageHeader } from "@/components/app/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Attachments } from "@/components/app/attachments";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Plus, Phone, Mail, MapPin, Zap, Building2, Wrench, FileText } from "lucide-react";
+import { HELP } from "@/lib/page-help-data";
+import { Plus, Phone, Mail, MapPin, Zap, Building2, Wrench, FileText, Shield } from "lucide-react";
 
 export default async function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const s = await requireSession();
@@ -37,10 +39,12 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
         title={customer.companyName || `${customer.name} ${customer.surname || ""}`}
         description={`${customer.type} · ${customer.tags.join(", ") || "—"}`}
         back="/admin/customers"
+        help={HELP.customer_detail}
         actions={
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button asChild variant="outline" size="sm"><Link href={`/admin/plants/new?customerId=${customer.id}`}><Zap className="h-4 w-4" /> Impianto</Link></Button>
             <Button asChild variant="outline" size="sm"><Link href={`/admin/work-orders/new?customerId=${customer.id}`}><Wrench className="h-4 w-4" /> Intervento</Link></Button>
+            <Button asChild variant="outline" size="sm"><Link href={`/admin/privacy?customerId=${customer.id}`}><Shield className="h-4 w-4" /> Privacy</Link></Button>
             <Button asChild size="sm"><Link href={`/admin/quotes/new?customerId=${customer.id}`}><FileText className="h-4 w-4" /> Preventivo</Link></Button>
           </div>
         }
@@ -127,6 +131,8 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           </CardContent>
         </Card>
       </div>
+
+      <Attachments entityType="Customer" entityId={customer.id} title="Allegati cliente (contratti, documenti, foto)" accept=".pdf,image/*,.doc,.docx,.xls,.xlsx" />
     </div>
   );
 }

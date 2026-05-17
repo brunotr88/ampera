@@ -28,22 +28,32 @@ export async function POST(req: NextRequest) {
   const last = await db.quote.findFirst({ where: { tenantId: s.tenantId }, orderBy: { createdAt: "desc" }, select: { number: true } });
   const number = nextDocumentNumber(last?.number);
 
-  const linesForCalc = data.lines.map(l => ({ quantity: l.quantity, unitPrice: l.unitPrice, discountPercent: l.discountPercent, vatRate: l.vatRate }));
-  const totals = calcVatBreakdown(linesForCalc);
-  const discountAmount = round2(totals.subtotal * (data.discountPercent / 100));
-  const final = { subtotal: round2(totals.subtotal - discountAmount), vatTotal: totals.vat, total: round2(totals.subtotal - discountAmount + totals.vat) };
+  // Compute each line: gross - lineDiscount % - lineDiscount € → imponibile, then add VAT
+  const lineTotals = data.lines.map(l => {
+    const gross = l.quantity * l.unitPrice;
+    const afterPct = gross * (1 - l.discountPercent / 100);
+    const imponibile = Math.max(0, afterPct - (l.discountAmount || 0));
+    const vat = imponibile * (l.vatRate / 100);
+    return { imponibile, vat, total: imponibile + vat };
+  });
+  const subtotalLines = lineTotals.reduce((s, l) => s + l.imponibile, 0);
+  const vatLines = lineTotals.reduce((s, l) => s + l.vat, 0);
+  const globalDiscountAmount = round2(subtotalLines * (data.discountPercent / 100));
+  const final = { subtotal: round2(subtotalLines - globalDiscountAmount), vatTotal: round2(vatLines), total: round2(subtotalLines - globalDiscountAmount + vatLines) };
 
   const quote = await db.quote.create({
     data: {
       tenantId: s.tenantId, customerId: data.customerId, projectId: data.projectId, number, version: 1,
       title: data.title, description: data.description, validUntil: data.validUntil,
-      defaultVatRate: data.defaultVatRate, discountPercent: data.discountPercent, discountAmount,
+      defaultVatRate: data.defaultVatRate, discountPercent: data.discountPercent, discountAmount: globalDiscountAmount,
       subtotal: final.subtotal, vatTotal: final.vatTotal, total: final.total,
       terms: data.terms, internalNotes: data.internalNotes,
       lines: { create: data.lines.map((l, i) => ({
         position: i + 1, materialId: l.materialId, code: l.code, description: l.description,
-        quantity: l.quantity, unit: l.unit, unitPrice: l.unitPrice, discountPercent: l.discountPercent,
-        vatRate: l.vatRate, total: round2(l.quantity * l.unitPrice * (1 - l.discountPercent / 100) * (1 + l.vatRate / 100)),
+        quantity: l.quantity, unit: l.unit, unitPrice: l.unitPrice,
+        discountPercent: l.discountPercent, discountAmount: l.discountAmount || 0,
+        vatRate: l.vatRate, vatExemptionCode: l.vatExemptionCode, vatNote: l.vatNote,
+        total: round2(lineTotals[i].total),
       })) },
     },
   });

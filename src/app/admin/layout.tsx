@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { Sidebar } from "@/components/app/sidebar";
 import { Topbar } from "@/components/app/topbar";
+import { CommandPalette } from "@/components/app/command-palette";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -13,6 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Topbar user={session.user} />
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
+      <CommandPalette />
     </div>
   );
 }

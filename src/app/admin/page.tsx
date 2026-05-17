@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate, timeAgo } from "@/lib/utils";
+import { PageHelp } from "@/components/app/page-help";
+import { HELP } from "@/lib/page-help-data";
 import Link from "next/link";
 import { Users, Wrench, Receipt, TrendingUp, Calendar, AlertTriangle, FileCheck, Zap, ArrowRight, ClipboardList } from "lucide-react";
 
@@ -27,7 +29,10 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <section className="relative overflow-hidden rounded-2xl gradient-mesh bg-grid p-6 md:p-8 text-white">
         <div className="relative z-10 max-w-3xl">
-          <div className="text-xs font-semibold text-white/70 uppercase tracking-wider mb-2">Panoramica</div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="text-xs font-semibold text-white/70 uppercase tracking-wider">Panoramica</div>
+            <div className="opacity-80 hover:opacity-100 transition-opacity"><PageHelp data={HELP.dashboard} /></div>
+          </div>
           <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">Ciao {s.name.split(" ")[0]}, hai {openWO} interventi aperti</h1>
           <p className="text-white/70 mb-5">Marginalità, scadenze e operatività dell'azienda in un colpo d'occhio.</p>
           <div className="flex gap-3 flex-wrap">

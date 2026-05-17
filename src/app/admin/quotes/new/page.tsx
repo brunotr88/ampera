@@ -12,7 +12,15 @@ import { Save, Loader2, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 
-type Line = { description: string; quantity: number; unit: string; unitPrice: number; discountPercent: number; vatRate: number; code?: string };
+type Line = { description: string; quantity: number; unit: string; unitPrice: number; discountPercent: number; discountAmount: number; vatRate: number; code?: string; vatNote?: string };
+
+const VAT_OPTIONS = [
+  { rate: 22, label: "22% standard" },
+  { rate: 10, label: "10% ristrutturazione" },
+  { rate: 4, label: "4% prima casa/accessibilità" },
+  { rate: 5, label: "5% sociale" },
+  { rate: 0, label: "0% non imponibile/esente" },
+];
 
 function NewQuoteForm() {
   const router = useRouter();
@@ -20,14 +28,21 @@ function NewQuoteForm() {
   const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState<any[]>([]);
   const [form, setForm] = useState<any>({ customerId: sp.get("customerId") || "", title: "", defaultVatRate: 22, discountPercent: 0 });
-  const [lines, setLines] = useState<Line[]>([{ description: "", quantity: 1, unit: "pz", unitPrice: 0, discountPercent: 0, vatRate: 22 }]);
+  const [lines, setLines] = useState<Line[]>([{ description: "", quantity: 1, unit: "pz", unitPrice: 0, discountPercent: 0, discountAmount: 0, vatRate: 22 }]);
 
   useEffect(() => { fetch("/api/customers").then(r => r.json()).then(d => setCustomers(d.customers || [])); }, []);
 
-  const subtotal = lines.reduce((s, l) => s + l.quantity * l.unitPrice * (1 - l.discountPercent / 100), 0);
-  const discount = subtotal * (form.discountPercent / 100);
-  const vat = lines.reduce((s, l) => s + l.quantity * l.unitPrice * (1 - l.discountPercent / 100) * (l.vatRate / 100), 0);
-  const total = subtotal - discount + vat;
+  const lineComputed = lines.map(l => {
+    const gross = l.quantity * l.unitPrice;
+    const afterPct = gross * (1 - l.discountPercent / 100);
+    const imponibile = Math.max(0, afterPct - (l.discountAmount || 0));
+    return { imponibile, vat: imponibile * (l.vatRate / 100), total: imponibile * (1 + l.vatRate / 100) };
+  });
+  const subtotalLines = lineComputed.reduce((s, l) => s + l.imponibile, 0);
+  const vat = lineComputed.reduce((s, l) => s + l.vat, 0);
+  const discount = subtotalLines * (form.discountPercent / 100);
+  const subtotal = subtotalLines - discount;
+  const total = subtotal + vat;
 
   function updateLine(i: number, patch: Partial<Line>) {
     setLines(ls => ls.map((l, idx) => idx === i ? { ...l, ...patch } : l));
@@ -70,19 +85,31 @@ function NewQuoteForm() {
           <div>
             <div className="flex justify-between items-center mb-2">
               <Label className="m-0">Righe preventivo</Label>
-              <Button type="button" size="sm" variant="outline" onClick={() => setLines([...lines, { description: "", quantity: 1, unit: "pz", unitPrice: 0, discountPercent: 0, vatRate: form.defaultVatRate }])}><Plus className="h-3 w-3" /> Aggiungi</Button>
+              <Button type="button" size="sm" variant="outline" onClick={() => setLines([...lines, { description: "", quantity: 1, unit: "pz", unitPrice: 0, discountPercent: 0, discountAmount: 0, vatRate: form.defaultVatRate }])}><Plus className="h-3 w-3" /> Aggiungi</Button>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {lines.map((l, i) => (
-                <div key={i} className="grid grid-cols-12 gap-2 items-start p-3 bg-muted/30 rounded-lg">
-                  <Input className="col-span-12 md:col-span-4" placeholder="Descrizione voce" value={l.description} onChange={e => updateLine(i, { description: e.target.value })} required />
-                  <Input className="col-span-3 md:col-span-1" type="number" step="0.01" placeholder="Qta" value={l.quantity} onChange={e => updateLine(i, { quantity: Number(e.target.value) })} />
-                  <Input className="col-span-3 md:col-span-1" placeholder="UM" value={l.unit} onChange={e => updateLine(i, { unit: e.target.value })} />
-                  <Input className="col-span-3 md:col-span-2" type="number" step="0.01" placeholder="Prezzo" value={l.unitPrice} onChange={e => updateLine(i, { unitPrice: Number(e.target.value) })} />
-                  <Input className="col-span-3 md:col-span-1" type="number" step="0.5" placeholder="Sc%" value={l.discountPercent} onChange={e => updateLine(i, { discountPercent: Number(e.target.value) })} />
-                  <Input className="col-span-6 md:col-span-1" type="number" step="1" placeholder="IVA" value={l.vatRate} onChange={e => updateLine(i, { vatRate: Number(e.target.value) })} />
-                  <div className="col-span-4 md:col-span-1 text-right font-semibold">{formatCurrency(l.quantity * l.unitPrice * (1 - l.discountPercent / 100))}</div>
-                  <Button type="button" variant="ghost" size="icon" className="col-span-2 md:col-span-1" onClick={() => setLines(ls => ls.filter((_, idx) => idx !== i))}><Trash2 className="h-4 w-4" /></Button>
+                <div key={i} className="p-3 bg-muted/30 rounded-lg space-y-2">
+                  <div className="grid grid-cols-12 gap-2 items-start">
+                    <Input className="col-span-12 md:col-span-6" placeholder="Descrizione" value={l.description} onChange={e => updateLine(i, { description: e.target.value })} required />
+                    <Input className="col-span-3 md:col-span-1" type="number" step="0.01" placeholder="Qta" value={l.quantity} onChange={e => updateLine(i, { quantity: Number(e.target.value) })} />
+                    <Input className="col-span-3 md:col-span-1" placeholder="UM" value={l.unit} onChange={e => updateLine(i, { unit: e.target.value })} />
+                    <Input className="col-span-3 md:col-span-2" type="number" step="0.01" placeholder="Prezzo €" value={l.unitPrice} onChange={e => updateLine(i, { unitPrice: Number(e.target.value) })} />
+                    <div className="col-span-3 md:col-span-2 text-right font-semibold pt-2">{formatCurrency(lineComputed[i].total)}</div>
+                  </div>
+                  <div className="grid grid-cols-12 gap-2 items-center text-xs">
+                    <div className="col-span-2 text-muted-foreground">Sconto:</div>
+                    <Input className="col-span-2" type="number" step="0.5" min="0" max="100" placeholder="% sconto" title="Sconto in percentuale" value={l.discountPercent} onChange={e => updateLine(i, { discountPercent: Number(e.target.value) })} />
+                    <Input className="col-span-2" type="number" step="0.01" min="0" placeholder="€ sconto" title="Sconto in valore (oltre alla %)" value={l.discountAmount} onChange={e => updateLine(i, { discountAmount: Number(e.target.value) })} />
+                    <div className="col-span-2 text-muted-foreground">IVA:</div>
+                    <select className="col-span-3 h-9 rounded-md border border-input bg-background px-2" value={l.vatRate} onChange={e => updateLine(i, { vatRate: Number(e.target.value) })}>
+                      {VAT_OPTIONS.map(o => <option key={o.rate} value={o.rate}>{o.label}</option>)}
+                    </select>
+                    <Button type="button" variant="ghost" size="icon" className="col-span-1 h-9 w-9" onClick={() => setLines(ls => ls.filter((_, idx) => idx !== i))}><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                  {l.vatRate === 0 && (
+                    <Input placeholder="Nota IVA (es. art. 8/A DPR 633/72 - non imponibile)" value={l.vatNote || ""} onChange={e => updateLine(i, { vatNote: e.target.value } as any)} className="text-xs" />
+                  )}
                 </div>
               ))}
             </div>
