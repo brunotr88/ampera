@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Users, Wrench, FileText, ClipboardList, Calendar, Package, Truck, FileCheck, Receipt,
   TrendingUp, Settings, LogOut, Zap, Building2, BadgeEuro, ShoppingCart, BookMarked, CalendarDays, Sun, BarChart3,
-  Award, Shield, BookOpen
+  Award, Shield, BookOpen, User
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -30,6 +30,7 @@ const nav = [
   { href: "/admin/privacy", label: "Privacy & GDPR", icon: Shield },
   { href: "/admin/faq", label: "FAQ & Guide", icon: BookOpen },
   { href: "/admin/reports/kpi", label: "Report KPI", icon: BarChart3 },
+  { href: "/admin/profile", label: "Profilo & Password", icon: User },
   { href: "/admin/settings", label: "Impostazioni", icon: Settings },
 ];
 
