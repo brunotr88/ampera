@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { t } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
@@ -35,7 +36,7 @@ export default async function CashbookPage() {
             <CardHeader className="pb-2"><CardTitle className="text-sm">{c.name}</CardTitle></CardHeader>
             <CardContent>
               <div className="font-display text-2xl font-bold">{formatCurrency(c.currentBalance)}</div>
-              <Badge variant="muted" className="mt-1">{c.type}</Badge>
+              <Badge variant="muted" className="mt-1">{t(c.type)}</Badge>
             </CardContent>
           </Card>
         ))}

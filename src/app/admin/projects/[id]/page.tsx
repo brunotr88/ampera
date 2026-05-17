@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { t } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
@@ -30,7 +31,7 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
           <div className={`text-xs mt-1 ${matPercent > 100 ? "text-destructive" : matPercent > 80 ? "text-amber-600" : "text-muted-foreground"}`}>{matPercent.toFixed(1)}% del budget</div>
         </CardContent></Card>
         <Card><CardHeader><CardTitle>Stato</CardTitle></CardHeader><CardContent>
-          <Badge variant={p.status === "ACTIVE" ? "success" : "muted"}>{p.status}</Badge>
+          <Badge variant={p.status === "ACTIVE" ? "success" : "muted"}>{t(p.status)}</Badge>
           <div className="text-xs text-muted-foreground mt-2">{p.startDate ? formatDate(p.startDate) : "—"} → {p.endDate ? formatDate(p.endDate) : "—"}</div>
         </CardContent></Card>
       </div>
@@ -39,7 +40,7 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
         {p.workOrders.length === 0 ? <p className="text-sm text-muted-foreground">Nessun intervento ancora.</p> : <ul className="space-y-2">{p.workOrders.map(w => (
           <li key={w.id} className="flex justify-between text-sm">
             <span>{w.code} - {w.title}</span>
-            <Badge variant="muted">{w.status}</Badge>
+            <Badge variant="muted">{t(w.status)}</Badge>
           </li>
         ))}</ul>}
       </CardContent></Card>

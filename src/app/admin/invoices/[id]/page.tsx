@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { t } from "@/lib/labels";
 import Link from "next/link";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
@@ -59,8 +60,8 @@ export default async function InvoiceDetail({ params }: { params: Promise<{ id: 
             <div className="flex justify-between pt-2"><span>Incassato</span><span className="font-semibold text-emerald-600">{formatCurrency(inv.amountPaid)}</span></div>
             <div className="flex justify-between"><span>Residuo</span><span className={`font-semibold ${inv.total - inv.amountPaid > 0 ? "text-amber-600" : ""}`}>{formatCurrency(inv.total - inv.amountPaid)}</span></div>
             <div className="pt-3 flex flex-col gap-1 text-xs">
-              <div className="flex justify-between"><span>SDI:</span><Badge variant="muted">{inv.sdiStatus}</Badge></div>
-              <div className="flex justify-between"><span>Pagamento:</span><Badge variant="warning">{inv.paymentStatus}</Badge></div>
+              <div className="flex justify-between"><span>SDI:</span><Badge variant="muted">{t(inv.sdiStatus)}</Badge></div>
+              <div className="flex justify-between"><span>Pagamento:</span><Badge variant="warning">{t(inv.paymentStatus)}</Badge></div>
             </div>
           </CardContent>
         </Card>

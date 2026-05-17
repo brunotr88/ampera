@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { t } from "@/lib/labels";
 import { PageHeader } from "@/components/app/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -96,7 +97,7 @@ export default function SettingsPage() {
                 <TableRow key={u.id}>
                   <TableCell className="font-medium">{u.name}</TableCell>
                   <TableCell>{u.email}</TableCell>
-                  <TableCell><Badge variant="outline">{u.role}</Badge></TableCell>
+                  <TableCell><Badge variant="outline">{t(u.role)}</Badge></TableCell>
                   <TableCell>{u.phoneNumber || "—"}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString("it-IT") : "—"}</TableCell>
                 </TableRow>

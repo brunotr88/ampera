@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { t } from "@/lib/labels";
 import Link from "next/link";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
@@ -54,7 +55,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             <div className="flex justify-between"><span>IVA</span><span>{formatCurrency(q.vatTotal)}</span></div>
             <div className="flex justify-between font-bold text-lg pt-2 border-t"><span>Totale</span><span className="text-primary">{formatCurrency(q.total)}</span></div>
             <div className="pt-3 flex flex-col gap-2 text-xs">
-              <div className="flex justify-between"><span>Stato:</span><Badge variant="info">{q.status}</Badge></div>
+              <div className="flex justify-between"><span>Stato:</span><Badge variant="info">{t(q.status)}</Badge></div>
               {q.validUntil && <div>Valido fino: {formatDate(q.validUntil)}</div>}
               {q.sentAt && <div>Inviato: {formatDate(q.sentAt)}</div>}
               {q.acceptedAt && <div>Accettato: {formatDate(q.acceptedAt)}</div>}

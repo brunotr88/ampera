@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { t } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
@@ -29,7 +30,7 @@ export default async function ProjectsPage() {
                 <TableCell>{p.customer.companyName || p.customer.name}</TableCell>
                 <TableCell className="text-xs">{p.startDate ? formatDate(p.startDate) : "—"}</TableCell>
                 <TableCell className="text-right">{formatCurrency(p.budgetMaterials + p.budgetLabor + p.budgetIndirect)}</TableCell>
-                <TableCell><Badge variant={p.status === "ACTIVE" ? "success" : p.status === "CLOSED" ? "muted" : "warning"}>{p.status}</Badge></TableCell>
+                <TableCell><Badge variant={p.status === "ACTIVE" ? "success" : p.status === "CLOSED" ? "muted" : "warning"}>{t(p.status)}</Badge></TableCell>
               </TableRow>
             ))}
           </TableBody>

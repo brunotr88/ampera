@@ -303,9 +303,9 @@ export default function ReportWizard({ params }: { params: Promise<{ id: string 
             {matResults.length > 0 && (
               <div className="absolute top-full left-0 right-0 bg-white border rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto z-20">
                 {matResults.slice(0, 10).map(m => (
-                  <button key={m.id} type="button" onClick={() => addMaterial(m)} className="w-full text-left p-2 hover:bg-slate-50 border-b last:border-0">
+                  <button key={m.id} type="button" onClick={() => addMaterial(m)} className="w-full text-left p-2 hover:bg-slate-50 dark:hover:bg-slate-800 border-b last:border-0">
                     <div className="font-medium text-sm">{m.name}</div>
-                    <div className="text-xs text-slate-500">{m.code} · {m.unitPrice}€</div>
+                    <div className="text-xs text-slate-500">{m.code}</div>
                   </button>
                 ))}
               </div>

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { t } from "@/lib/labels";
 import { PageHeader } from "@/components/app/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
@@ -86,7 +87,7 @@ export default function VacationsPage() {
               <TableCell><Badge variant="outline">{TYPE_LABEL[v.type]}</Badge></TableCell>
               <TableCell>{formatDate(v.startDate)} → {formatDate(v.endDate)}</TableCell>
               <TableCell>
-                <Badge variant={v.status === "APPROVED" ? "success" : v.status === "PENDING" ? "warning" : "destructive"}>{v.status}</Badge>
+                <Badge variant={v.status === "APPROVED" ? "success" : v.status === "PENDING" ? "warning" : "destructive"}>{t(v.status)}</Badge>
               </TableCell>
               <TableCell className="text-xs text-muted-foreground">{v.reason || v.rejectedReason || "—"}</TableCell>
               <TableCell className="text-right">

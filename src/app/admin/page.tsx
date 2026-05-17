@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/permissions";
+import { t } from "@/lib/labels";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,17 +11,17 @@ import { Users, Wrench, Receipt, TrendingUp, Calendar, AlertTriangle, FileCheck,
 
 export default async function DashboardPage() {
   const s = await requireSession();
-  const t = s.tenantId;
+  const tid = s.tenantId;
 
   const [customers, openWO, reportsThisMonth, invoicesUnpaid, contractsDue, dicosDraft, upcomingEvents, lastReports] = await Promise.all([
-    db.customer.count({ where: { tenantId: t, deletedAt: null } }),
-    db.workOrder.count({ where: { tenantId: t, status: { in: ["SCHEDULED", "IN_PROGRESS"] }, deletedAt: null } }),
-    db.report.count({ where: { tenantId: t, signedAt: { gte: startOfMonth() }, deletedAt: null } }),
-    db.invoice.aggregate({ where: { tenantId: t, paymentStatus: { in: ["UNPAID", "PARTIAL", "OVERDUE"] }, deletedAt: null }, _sum: { total: true, amountPaid: true } }),
-    db.maintenanceContract.findMany({ where: { tenantId: t, active: true, nextDueDate: { lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) } }, include: { customer: true }, orderBy: { nextDueDate: "asc" }, take: 6 }),
-    db.conformityDeclaration.count({ where: { tenantId: t, status: "DRAFT" } }),
-    db.calendarEvent.findMany({ where: { tenantId: t, startsAt: { gte: new Date() } }, orderBy: { startsAt: "asc" }, take: 6 }),
-    db.report.findMany({ where: { tenantId: t, deletedAt: null }, include: { customer: true, technician: true }, orderBy: { updatedAt: "desc" }, take: 6 }),
+    db.customer.count({ where: { tenantId: tid, deletedAt: null } }),
+    db.workOrder.count({ where: { tenantId: tid, status: { in: ["SCHEDULED", "IN_PROGRESS"] }, deletedAt: null } }),
+    db.report.count({ where: { tenantId: tid, signedAt: { gte: startOfMonth() }, deletedAt: null } }),
+    db.invoice.aggregate({ where: { tenantId: tid, paymentStatus: { in: ["UNPAID", "PARTIAL", "OVERDUE"] }, deletedAt: null }, _sum: { total: true, amountPaid: true } }),
+    db.maintenanceContract.findMany({ where: { tenantId: tid, active: true, nextDueDate: { lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) } }, include: { customer: true }, orderBy: { nextDueDate: "asc" }, take: 6 }),
+    db.conformityDeclaration.count({ where: { tenantId: tid, status: "DRAFT" } }),
+    db.calendarEvent.findMany({ where: { tenantId: tid, startsAt: { gte: new Date() } }, orderBy: { startsAt: "asc" }, take: 6 }),
+    db.report.findMany({ where: { tenantId: tid, deletedAt: null }, include: { customer: true, technician: true }, orderBy: { updatedAt: "desc" }, take: 6 }),
   ]);
 
   const unpaidTotal = (invoicesUnpaid._sum.total || 0) - (invoicesUnpaid._sum.amountPaid || 0);
@@ -73,7 +74,7 @@ export default async function DashboardPage() {
                       <div className="font-medium truncate">{r.customer.companyName || `${r.customer.name} ${r.customer.surname || ""}`} · #{r.code}</div>
                       <div className="text-xs text-muted-foreground">{r.technician.name} · {timeAgo(r.updatedAt)}</div>
                     </div>
-                    <Badge variant={r.status === "SUBMITTED" ? "success" : r.status === "DRAFT" ? "warning" : "muted"}>{r.status}</Badge>
+                    <Badge variant={r.status === "SUBMITTED" ? "success" : r.status === "DRAFT" ? "warning" : "muted"}>{t(r.status)}</Badge>
                     <Link href={`/admin/reports/${r.id}`} className="text-xs font-medium text-primary hover:underline">Apri</Link>
                   </li>
                 ))}

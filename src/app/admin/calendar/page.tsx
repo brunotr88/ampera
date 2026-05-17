@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { t } from "@/lib/labels";
 import { PageHeader } from "@/components/app/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -127,7 +128,7 @@ export default function CalendarPage() {
                   <div className="font-medium">{e.title}</div>
                   <div className="text-xs text-muted-foreground">{formatDateTime(e.startsAt)} → {formatDateTime(e.endsAt)} {e.location && `· ${e.location}`}</div>
                 </div>
-                <Badge variant="outline">{e.type}</Badge>
+                <Badge variant="outline">{t(e.type)}</Badge>
               </div>
             ))}
           </CardContent>

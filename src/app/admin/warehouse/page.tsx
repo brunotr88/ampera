@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { t } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
@@ -33,7 +34,7 @@ export default async function WarehousePage() {
           <Card key={w.id}>
             <CardHeader className="pb-2"><CardTitle className="text-sm">{w.name}</CardTitle></CardHeader>
             <CardContent>
-              <Badge variant="outline">{w.type}</Badge>
+              <Badge variant="outline">{t(w.type)}</Badge>
               {w.assignedTo && <div className="text-xs text-muted-foreground mt-2">Assegnato a {w.assignedTo.name}</div>}
             </CardContent>
           </Card>
@@ -49,7 +50,7 @@ export default async function WarehousePage() {
               {movements.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground"><Package className="h-7 w-7 mx-auto mb-2" />Nessun movimento</TableCell></TableRow> : movements.map(m => (
                 <TableRow key={m.id}>
                   <TableCell className="text-xs">{formatDate(m.createdAt)}</TableCell>
-                  <TableCell><Badge variant={m.type === "IN" ? "success" : m.type === "OUT" ? "warning" : "muted"}>{m.type}</Badge></TableCell>
+                  <TableCell><Badge variant={m.type === "IN" ? "success" : m.type === "OUT" ? "warning" : "muted"}>{t(m.type)}</Badge></TableCell>
                   <TableCell>{m.material?.name || "—"}</TableCell>
                   <TableCell>{m.warehouse.name}</TableCell>
                   <TableCell className={`text-right font-semibold ${m.type === "IN" ? "text-emerald-600" : "text-amber-600"}`}>{m.type === "IN" ? "+" : "-"}{m.quantity}</TableCell>

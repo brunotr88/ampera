@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { t } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
@@ -49,7 +50,7 @@ export default async function PlantsPage() {
                     {p.code && <div className="text-xs text-muted-foreground font-mono">{p.code}</div>}
                   </TableCell>
                   <TableCell><Link href={`/admin/customers/${p.customer.id}`} className="hover:underline">{p.customer.companyName || `${p.customer.name} ${p.customer.surname || ""}`}</Link></TableCell>
-                  <TableCell><Badge variant="outline">{p.type}</Badge></TableCell>
+                  <TableCell><Badge variant="outline">{t(p.type)}</Badge></TableCell>
                   <TableCell className="text-right">{p.ratedPowerKw ? `${p.ratedPowerKw} kW` : "—"}</TableCell>
                   <TableCell>{p.installDate ? formatDate(p.installDate) : "—"}</TableCell>
                   <TableCell>

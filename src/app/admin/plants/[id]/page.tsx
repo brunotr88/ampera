@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { t } from "@/lib/labels";
 import Link from "next/link";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
@@ -63,7 +64,7 @@ export default async function PlantDetailPage({ params }: { params: Promise<{ id
                       <span className="font-medium text-sm">#{r.code}</span>
                       <span className="text-xs text-muted-foreground">{r.technician.name}</span>
                     </Link>
-                    <Badge variant={r.status === "SUBMITTED" ? "success" : "muted"}>{r.status}</Badge>
+                    <Badge variant={r.status === "SUBMITTED" ? "success" : "muted"}>{t(r.status)}</Badge>
                   </li>
                 ))}
               </ul>
@@ -83,7 +84,7 @@ export default async function PlantDetailPage({ params }: { params: Promise<{ id
                     <div className="font-medium text-sm">#{d.number}</div>
                     <div className="text-xs text-muted-foreground">RT: {d.rtName || "—"}</div>
                   </div>
-                  <Badge variant={d.status === "ISSUED" ? "success" : "muted"}>{d.status}</Badge>
+                  <Badge variant={d.status === "ISSUED" ? "success" : "muted"}>{t(d.status)}</Badge>
                 </li>
               ))}
             </ul>

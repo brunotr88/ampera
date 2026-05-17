@@ -31,7 +31,18 @@ function LoginForm() {
         setErr("Credenziali non valide o codice 2FA mancante.");
         setShowTotp(true);
       } else if (res?.ok) {
-        router.push(res.url || cb);
+        // Determina dove reindirizzare in base al ruolo (ottenuto via /api/auth/session dopo signIn)
+        try {
+          const session = await fetch("/api/auth/session", { cache: "no-store" }).then(r => r.json());
+          const role = session?.user?.role;
+          let target = res.url || cb;
+          if (role === "TECHNICIAN") target = "/operatore";
+          else if (role === "CUSTOMER") target = "/portal";
+          else if (cb === "/admin" || cb === "/") target = "/admin";
+          router.push(target);
+        } catch {
+          router.push(res.url || cb);
+        }
         router.refresh();
       }
     } catch {
