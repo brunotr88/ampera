@@ -21,7 +21,7 @@ function NewInvoiceForm() {
     customerId: "", type: "INVOICE", issueDate: new Date().toISOString().slice(0, 10),
     withholdingTax: 0, splitPayment: false, reverseCharge: false, stampDuty: 0,
   });
-  const [lines, setLines] = useState<any[]>([{ description: "", quantity: 1, unit: "pz", unitPrice: 0, discountPercent: 0, discountAmount: 0, vatRate: 22 }]);
+  const [lines, setLines] = useState<any[]>([{ description: "", quantity: 1, unit: "pz", unitPrice: 0, discountPercent: 0, discountAmount: 0, vatRate: 22, lineNote: "" }]);
 
   const VAT_OPTIONS = [
     { rate: 22, label: "22% standard" },
@@ -126,6 +126,7 @@ function NewInvoiceForm() {
                 {l.vatRate === 0 && (
                   <Input placeholder="Nota IVA (es. art. 8/A DPR 633/72 non imponibile)" value={l.vatNote || ""} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, vatNote: e.target.value } : x))} className="text-xs" />
                 )}
+                <Input placeholder="Nota commento riga (opzionale, stampata in fattura)" value={l.lineNote || ""} onChange={e => setLines(ls => ls.map((x, idx) => idx === i ? { ...x, lineNote: e.target.value } : x))} className="text-xs" />
               </div>
             ))}
           </div>

@@ -110,6 +110,7 @@ function NewQuoteForm() {
                   {l.vatRate === 0 && (
                     <Input placeholder="Nota IVA (es. art. 8/A DPR 633/72 - non imponibile)" value={l.vatNote || ""} onChange={e => updateLine(i, { vatNote: e.target.value } as any)} className="text-xs" />
                   )}
+                  <Input placeholder="Nota commento riga (opzionale, stampata in preventivo)" value={(l as any).lineNote || ""} onChange={e => updateLine(i, { lineNote: e.target.value } as any)} className="text-xs" />
                 </div>
               ))}
             </div>
