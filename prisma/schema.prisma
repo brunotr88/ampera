@@ -80,6 +80,7 @@ model Tenant {
   userPreferences UserPreference[]
   vehicles     Vehicle[]
   assetAcquisitions AssetAcquisition[]
+  purchaseInvoices PurchaseInvoice[]
 }
 
 enum Plan {
@@ -1809,4 +1810,79 @@ model ReportReminderSent {
 
   @@unique([tenantId, userId, reminderDate, type])
   @@index([reminderDate])
+}
+
+
+// =====================================================================
+// PURCHASE INVOICES - Fatture passive (acquisto fornitori)
+// Ogni riga può essere assegnata a magazzino (carico) o cespite
+// =====================================================================
+
+model PurchaseInvoice {
+  id            String   @id @default(cuid())
+  tenantId      String
+  supplierId    String
+  number        String
+  series        String?
+  issueDate     DateTime
+  receiveDate   DateTime?
+  dueDate       DateTime?
+  paymentStatus PaymentStatus @default(UNPAID)
+  paymentDate   DateTime?
+  amountPaid    Float    @default(0)
+  subtotal      Float    @default(0)
+  vatTotal      Float    @default(0)
+  shippingCost  Float    @default(0)
+  total         Float    @default(0)
+  withholdingTax Float   @default(0)
+  reverseCharge Boolean  @default(false)
+  notes         String?
+  internalNotes String?
+  attachmentUrl String?
+  purchaseOrderId String?
+  registeredById String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  lines         PurchaseInvoiceLine[]
+
+  @@unique([tenantId, supplierId, number, series])
+  @@index([tenantId])
+  @@index([supplierId])
+  @@index([issueDate])
+  @@index([paymentStatus])
+}
+
+model PurchaseInvoiceLine {
+  id            String   @id @default(cuid())
+  invoiceId     String
+  position      Int
+  type          PurchaseLineType @default(WAREHOUSE)
+  materialId    String?
+  materialCode  String?
+  description   String
+  lineNote      String?
+  quantity      Float
+  unit          String   @default("pz")
+  unitPrice     Float
+  discountPercent Float  @default(0)
+  vatRate       Float    @default(22)
+  total         Float
+  warehouseId   String?
+  assetId       String?
+  amortizationYears Int  @default(5)
+  stockMovementId String?
+
+  invoice       PurchaseInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+enum PurchaseLineType {
+  WAREHOUSE
+  ASSET
+  EXPENSE
+  CONSUMABLE
 }

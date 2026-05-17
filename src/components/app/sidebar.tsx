@@ -20,6 +20,7 @@ const nav = [
   { href: "/admin/invoices", label: "Fatture", icon: Receipt },
   { href: "/admin/cashbook", label: "Prima Nota", icon: BadgeEuro },
   { href: "/admin/purchase-orders", label: "Ordini Fornitori", icon: ShoppingCart },
+  { href: "/admin/purchase-invoices", label: "Fatture Acquisto", icon: Receipt },
   { href: "/admin/warehouse", label: "Magazzino", icon: Package },
   { href: "/admin/materials", label: "Articoli", icon: BookMarked },
   { href: "/admin/contracts", label: "Manutenzioni", icon: Truck },
