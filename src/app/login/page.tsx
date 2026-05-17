@@ -54,7 +54,7 @@ function LoginForm() {
         <form onSubmit={onSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xl shadow-ampera-700/5 space-y-4">
           <div>
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} className="h-12" placeholder="admin@example.com" />
+            <Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} className="h-12" placeholder="email@example.com" />
           </div>
           <div>
             <Label htmlFor="password">Password</Label>

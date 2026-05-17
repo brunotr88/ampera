@@ -6,9 +6,13 @@ const prisma = new PrismaClient();
 async function main() {
   const tenantName = process.env.ADMIN_TENANT_NAME || "Default Tenant";
   const slug = tenantName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  const email = process.env.ADMIN_EMAIL || "admin@example.com";
-  const password = process.env.ADMIN_PASSWORD || "CHANGE_ME";
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
   const name = process.env.ADMIN_NAME || "Admin";
+  if (!email || !password) {
+    console.log("[seed] ADMIN_EMAIL or ADMIN_PASSWORD missing - skipping admin seed");
+    return;
+  }
 
   // Tenant
   let tenant = await prisma.tenant.findUnique({ where: { slug } });

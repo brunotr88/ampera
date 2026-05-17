@@ -3,11 +3,17 @@ import nodemailer from "nodemailer";
 let _transport: nodemailer.Transporter | null = null;
 function transport() {
   if (_transport) return _transport;
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!host || !user || !pass) {
+    throw new Error("SMTP not configured (SMTP_HOST/USER/PASS env vars required)");
+  }
   _transport = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.example.com",
+    host,
     port: Number(process.env.SMTP_PORT || 587),
     secure: false,
-    auth: { user: process.env.SMTP_USER || "", pass: process.env.SMTP_PASS || "" },
+    auth: { user, pass },
     tls: { rejectUnauthorized: false },
   });
   return _transport;
@@ -22,7 +28,8 @@ export async function sendEmail(opts: {
   replyTo?: string;
   attachments?: any[];
 }) {
-  const from = opts.from || process.env.SMTP_FROM || "noreply@example.com";
+  const from = opts.from || process.env.SMTP_FROM;
+  if (!from) throw new Error("SMTP_FROM env required");
   return transport().sendMail({
     from: `Ampera <${from}>`,
     to: Array.isArray(opts.to) ? opts.to.join(",") : opts.to,
