@@ -6,10 +6,9 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache libc6-compat openssl
 COPY package.json package-lock.json* ./
-RUN npm install --legacy-peer-deps
+RUN npm install --legacy-peer-deps --include=dev
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 ENV ENCRYPTION_KEY="0000000000000000000000000000000000000000000000000000000000000000"
 ENV NEXTAUTH_SECRET="build-time-dummy"
