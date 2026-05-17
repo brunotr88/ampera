@@ -1,7 +1,7 @@
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import Link from "next/link";
-import { Wrench, MapPin, Clock, ChevronRight, Play, CheckCircle2 } from "lucide-react";
+import { Wrench, MapPin, Clock, ChevronRight, Play, CheckCircle2, ClipboardList } from "lucide-react";
 
 export default async function OperatoreHome() {
   const s = await requireSession();
@@ -33,13 +33,23 @@ export default async function OperatoreHome() {
         <p className="text-slate-600 dark:text-slate-400 dark:text-slate-500 mt-1">Hai <strong>{workOrders.length}</strong> {workOrders.length === 1 ? "intervento" : "interventi"} oggi</p>
       </header>
 
-      <div className="px-5">
-        <Link href="/operatore/start-day" className="block bg-gradient-to-br from-ampera-700 to-site rounded-2xl text-white p-5 shadow-lg shadow-ampera-700/20 lift mb-5">
+      <div className="px-5 space-y-3 mb-5">
+        <Link href="/operatore/start-day" className="block bg-gradient-to-br from-ampera-700 to-site rounded-2xl text-white p-5 shadow-lg shadow-ampera-700/20 lift">
           <div className="flex items-center gap-3">
             <Play className="h-7 w-7 fill-white/20" />
             <div className="flex-1">
               <div className="font-display font-bold text-xl">Inizia giornata</div>
               <div className="text-xs text-white/80">Timbra ingresso con GPS</div>
+            </div>
+            <ChevronRight className="h-5 w-5" />
+          </div>
+        </Link>
+        <Link href="/operatore/report/new" className="block bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-white p-5 shadow-lg shadow-emerald-700/20 lift">
+          <div className="flex items-center gap-3">
+            <ClipboardList className="h-7 w-7 fill-white/20" />
+            <div className="flex-1">
+              <div className="font-display font-bold text-xl">Nuovo rapportino</div>
+              <div className="text-xs text-white/80">Compila per qualsiasi cliente</div>
             </div>
             <ChevronRight className="h-5 w-5" />
           </div>

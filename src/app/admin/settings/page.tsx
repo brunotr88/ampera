@@ -68,6 +68,30 @@ export default function SettingsPage() {
       </Card>
 
       <Card>
+        <CardHeader><CardTitle>Notifiche rapportini</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">Quando un operatore firma un rapportino, dopo 10 minuti (finestra di annullamento) viene inviata una copia email a questo indirizzo + PDF salvato in archivio.</p>
+          <div>
+            <Label>Email destinazione rapportini</Label>
+            <Input type="email" value={tenant.reportNotificationEmail || ""} onChange={e => setTenant({ ...tenant, reportNotificationEmail: e.target.value })} placeholder="ufficio@azienda.it" />
+            <p className="text-xs text-muted-foreground mt-1">Lascia vuoto per non ricevere email automatiche</p>
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={tenant.reportNotificationCcAdmins !== false}
+              onChange={e => setTenant({ ...tenant, reportNotificationCcAdmins: e.target.checked })} />
+            Invia anche a tutti gli amministratori in CC
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={tenant.reportReminderEnabled !== false}
+              onChange={e => setTenant({ ...tenant, reportReminderEnabled: e.target.checked })} />
+            Sollecita operatori che non hanno firmato il rapportino entro mezzanotte
+          </label>
+          <p className="text-xs text-muted-foreground">Se un operatore aveva interventi programmati ma non ha firmato alcun rapportino entro mezzanotte, riceve un'email di sollecito gentile. Dopo 2 giorni, vengono notificati anche gli amministratori.</p>
+          <Button onClick={saveTenant} disabled={saving}>{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Salva notifiche</Button>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             Utenti del workspace

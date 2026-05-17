@@ -33,6 +33,10 @@ model Tenant {
   iban         String?
   defaultVat   Float    @default(22)
   defaultMargin Float   @default(30)
+  reportNotificationEmail String?
+  reportNotificationCcAdmins Boolean @default(true)
+  reportReminderEnabled Boolean @default(true)
+  reportReminderHour Int @default(0)
   plan         Plan     @default(FREE)
   planExpiresAt DateTime?
   active       Boolean  @default(true)
@@ -628,6 +632,11 @@ model Report {
   invoiceId         String?
   syncedFromOfflineAt DateTime?
   clientId          String?
+  cancelledAt       DateTime?
+  cancelReason      String?
+  notifiedAt        DateTime?
+  pdfStoredAt       DateTime?
+  rowsJson          Json?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   deletedAt         DateTime?
@@ -1787,4 +1796,17 @@ enum AssetStatus {
   SOLD
   WRITTEN_OFF
   IN_REPAIR
+}
+
+model ReportReminderSent {
+  id          String   @id @default(cuid())
+  tenantId    String
+  userId      String
+  reminderDate DateTime
+  type        String
+  sentAt      DateTime @default(now())
+  recipient   String
+
+  @@unique([tenantId, userId, reminderDate, type])
+  @@index([reminderDate])
 }
