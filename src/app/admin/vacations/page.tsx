@@ -1,107 +1,111 @@
-"use client";
-import { useEffect, useState } from "react";
 import { tr } from "@/lib/labels";
+import { requireSession } from "@/lib/permissions";
+import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { DataTable, type ColumnDef } from "@/components/app/data-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatDate } from "@/lib/utils";
-import { Plus, Check, X, Sun, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { Sun } from "lucide-react";
+import { NewVacationDialog, VacationRowActions } from "./vacation-actions";
+import { parseTableParams, type SortDir } from "@/lib/datatable";
+import type { Prisma } from "@prisma/client";
 
-const TYPE_LABEL: any = { VACATION: "Ferie", PERMIT: "Permesso", ILLNESS: "Malattia", TRAINING: "Formazione", LEAVE_104: "L. 104", PARENTAL: "Genitoriale", OTHER: "Altro" };
+const TYPE_LABEL: Record<string, string> = { VACATION: "Ferie", PERMIT: "Permesso", ILLNESS: "Malattia", TRAINING: "Formazione", LEAVE_104: "L. 104", PARENTAL: "Genitoriale", OTHER: "Altro" };
+const SORTABLE = ["user", "type", "startDate", "endDate", "status"];
+const FILTERABLE = ["user", "type", "status"];
 
-export default function VacationsPage() {
-  const [requests, setRequests] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState<any>({ type: "VACATION", userId: "", notifyDaysBefore: 7 });
-
-  function load() { fetch("/api/vacations").then(r => r.json()).then(d => setRequests(d.requests || [])); }
-  useEffect(() => { load(); fetch("/api/users").then(r => r.json()).then(d => setUsers(d.users || [])); }, []);
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await fetch("/api/vacations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-      if (!res.ok) throw new Error("Errore");
-      toast.success("Richiesta inviata");
-      setOpen(false); setForm({ type: "VACATION", userId: "", notifyDaysBefore: 7 }); load();
-    } catch (e: any) { toast.error(e.message); } finally { setLoading(false); }
+function buildOrderBy(sort: string, dir: SortDir): Prisma.VacationRequestOrderByWithRelationInput {
+  switch (sort) {
+    case "user": return { user: { name: dir } };
+    case "type": return { type: dir };
+    case "startDate": return { startDate: dir };
+    case "endDate": return { endDate: dir };
+    case "status": return { status: dir };
+    default: return { startDate: "desc" };
   }
+}
 
-  async function act(id: string, action: "approve" | "reject") {
-    const reason = action === "reject" ? prompt("Motivo del rifiuto:") : undefined;
-    const res = await fetch("/api/vacations", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, action, reason }) });
-    if (res.ok) { toast.success(action === "approve" ? "Approvata" : "Respinta"); load(); }
-    else toast.error("Errore");
-  }
+export default async function VacationsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const s = await requireSession();
+  const sp = await searchParams;
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+
+  const users = await db.user.findMany({
+    where: { tenantId: s.tenantId, active: true },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+
+  const where: Prisma.VacationRequestWhereInput = {
+    tenantId: s.tenantId,
+    ...(p.q ? {
+      OR: [
+        { reason: { contains: p.q, mode: "insensitive" } },
+        { rejectedReason: { contains: p.q, mode: "insensitive" } },
+        { user: { name: { contains: p.q, mode: "insensitive" } } },
+      ],
+    } : {}),
+    ...(p.filters.user ? { userId: p.filters.user } : {}),
+    ...(p.filters.type ? { type: p.filters.type as any } : {}),
+    ...(p.filters.status ? { status: p.filters.status as any } : {}),
+  };
+
+  const [rows, total] = await Promise.all([
+    db.vacationRequest.findMany({
+      where,
+      include: { user: true },
+      orderBy: buildOrderBy(p.sort, p.dir),
+      skip: (p.page - 1) * p.pageSize,
+      take: p.pageSize,
+    }),
+    db.vacationRequest.count({ where }),
+  ]);
+
+  const columns: ColumnDef<typeof rows[number]>[] = [
+    {
+      key: "user", label: "Utente", sortable: true,
+      filter: { type: "select", placeholder: "Tutti", options: users.map(u => ({ value: u.id, label: u.name })) },
+      render: v => v.user.name,
+    },
+    {
+      key: "type", label: "Tipo", sortable: true,
+      filter: { type: "select", placeholder: "Tutti", options: Object.entries(TYPE_LABEL).map(([k, v]) => ({ value: k, label: v })) },
+      render: v => <Badge variant="outline">{TYPE_LABEL[v.type]}</Badge>,
+    },
+    { key: "period", label: "Periodo", render: v => `${formatDate(v.startDate)} → ${formatDate(v.endDate)}` },
+    {
+      key: "status", label: "Stato", sortable: true,
+      filter: { type: "select", placeholder: "Tutti", options: [
+        { value: "PENDING", label: "In attesa" },
+        { value: "APPROVED", label: "Approvata" },
+        { value: "REJECTED", label: "Rifiutata" },
+      ]},
+      render: v => <Badge variant={v.status === "APPROVED" ? "success" : v.status === "PENDING" ? "warning" : "destructive"}>{tr(v.status)}</Badge>,
+    },
+    { key: "reason", label: "Motivo", className: "text-xs text-muted-foreground", render: v => v.reason || v.rejectedReason || "—" },
+    {
+      key: "actions", label: "", className: "text-right",
+      render: v => v.status === "PENDING" ? <VacationRowActions id={v.id} /> : null,
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Ferie & Permessi" description={`${requests.length} richieste registrate`} actions={
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="h-4 w-4" /> Nuova richiesta</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Nuova richiesta ferie/permesso</DialogTitle></DialogHeader>
-            <form onSubmit={submit} className="space-y-3">
-              <div><Label>Utente *</Label><Select required value={form.userId} onChange={e => setForm({ ...form, userId: e.target.value })}>
-                <option value="">— Seleziona —</option>
-                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-              </Select></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label>Tipo</Label><Select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-                  {Object.entries(TYPE_LABEL).map(([k, v]: any) => <option key={k} value={k}>{v}</option>)}
-                </Select></div>
-                <div><Label>Notifica giorni prima</Label><Input type="number" min="0" value={form.notifyDaysBefore} onChange={e => setForm({ ...form, notifyDaysBefore: Number(e.target.value) })} /></div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label>Dal *</Label><Input type="date" required value={form.startDate || ""} onChange={e => setForm({ ...form, startDate: e.target.value })} /></div>
-                <div><Label>Al *</Label><Input type="date" required value={form.endDate || ""} onChange={e => setForm({ ...form, endDate: e.target.value })} /></div>
-              </div>
-              <div className="flex gap-3">
-                <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.halfDayStart} onChange={e => setForm({ ...form, halfDayStart: e.target.checked })} /> Mezza giornata inizio</label>
-                <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.halfDayEnd} onChange={e => setForm({ ...form, halfDayEnd: e.target.checked })} /> Mezza giornata fine</label>
-              </div>
-              <div><Label>Motivo</Label><Textarea rows={2} value={form.reason || ""} onChange={e => setForm({ ...form, reason: e.target.value })} /></div>
-              <Button type="submit" className="w-full" disabled={loading}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Invia"}</Button>
-            </form>
-          </DialogContent>
-        </Dialog>
-      } />
+      <PageHeader title="Ferie & Permessi" description={`${total} richieste registrate`} actions={<NewVacationDialog users={users} />} />
 
-      <Table>
-        <TableHeader><TableRow><TableHead>Utente</TableHead><TableHead>Tipo</TableHead><TableHead>Periodo</TableHead><TableHead>Stato</TableHead><TableHead>Motivo</TableHead><TableHead></TableHead></TableRow></TableHeader>
-        <TableBody>
-          {requests.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground"><Sun className="h-7 w-7 mx-auto mb-2" />Nessuna richiesta</TableCell></TableRow> : requests.map(v => (
-            <TableRow key={v.id}>
-              <TableCell>{v.user.name}</TableCell>
-              <TableCell><Badge variant="outline">{TYPE_LABEL[v.type]}</Badge></TableCell>
-              <TableCell>{formatDate(v.startDate)} → {formatDate(v.endDate)}</TableCell>
-              <TableCell>
-                <Badge variant={v.status === "APPROVED" ? "success" : v.status === "PENDING" ? "warning" : "destructive"}>{tr(v.status)}</Badge>
-              </TableCell>
-              <TableCell className="text-xs text-muted-foreground">{v.reason || v.rejectedReason || "—"}</TableCell>
-              <TableCell className="text-right">
-                {v.status === "PENDING" && (
-                  <div className="flex gap-1 justify-end">
-                    <Button size="sm" variant="outline" onClick={() => act(v.id, "approve")}><Check className="h-3 w-3" /></Button>
-                    <Button size="sm" variant="destructive" onClick={() => act(v.id, "reject")}><X className="h-3 w-3" /></Button>
-                  </div>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      {total === 0 && !p.q && Object.keys(p.filters).length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground"><Sun className="h-7 w-7 mx-auto mb-2" />Nessuna richiesta</div>
+      ) : (
+        <DataTable
+          basePath="/admin/vacations"
+          columns={columns}
+          rows={rows}
+          total={total}
+          rowKey={v => v.id}
+          params={p}
+          searchPlaceholder="Cerca per utente, motivo…"
+        />
+      )}
     </div>
   );
 }

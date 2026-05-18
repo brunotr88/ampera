@@ -52,11 +52,12 @@ function quoteIdent(col: string): string {
   return col === col.toLowerCase() ? col : `"${col}"`;
 }
 
-/** Costruisce l'espressione tsvector per WHERE/INDEX. Deve essere IDENTICA fra migration e query. */
+/** Costruisce l'espressione tsvector per WHERE/INDEX. Deve essere IDENTICA fra migration e query.
+ *  Cast ::text su ogni campo per supportare colonne enum (es: PlantType, CustomerType). */
 export function buildTsVectorExpr(entity: EntityName, tableAlias = ""): string {
   const fields = SEARCH_FIELDS[entity];
   const prefix = tableAlias ? `${tableAlias}.` : "";
-  const parts = fields.map(f => `coalesce(${prefix}${quoteIdent(f)},'')`).join(` || ' ' || `);
+  const parts = fields.map(f => `coalesce(${prefix}${quoteIdent(f)}::text,'')`).join(` || ' ' || `);
   return `to_tsvector('italian', ${parts})`;
 }
 
