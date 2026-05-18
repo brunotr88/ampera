@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { notFound } from "next/navigation";
 import { requireSession, hasRole } from "@/lib/permissions";
 import { db } from "@/lib/db";
@@ -44,7 +44,7 @@ export default async function DicoDetail({ params, searchParams }: { params: Pro
         <>
           <div className="grid md:grid-cols-3 gap-4">
             <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Stato</CardTitle></CardHeader><CardContent>
-              <Badge variant={d.status === "ISSUED" ? "success" : d.status === "SENT_TO_INAIL" ? "info" : "warning"}>{t(d.status)}</Badge>
+              <Badge variant={d.status === "ISSUED" ? "success" : d.status === "SENT_TO_INAIL" ? "info" : "warning"}>{tr(d.status)}</Badge>
             </CardContent></Card>
             <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Emissione</CardTitle></CardHeader><CardContent>
               <div className="font-display text-2xl font-bold">{d.issueDate ? formatDate(d.issueDate) : "—"}</div>

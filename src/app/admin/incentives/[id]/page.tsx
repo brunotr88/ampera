@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import Link from "next/link";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
@@ -44,7 +44,7 @@ export default async function IncentiveDetail({ params }: { params: Promise<{ id
           <div><strong>Descrizione lavori:</strong><br/>{app.workDescription}</div>
           {app.workStartDate && <div><strong>Periodo lavori:</strong> {formatDate(app.workStartDate)} → {app.workEndDate ? formatDate(app.workEndDate) : "in corso"}</div>}
           <div className="pt-2 flex gap-2 flex-wrap">
-            <Badge variant={app.status === "COMPLETED" ? "success" : "warning"}>{t(app.status)}</Badge>
+            <Badge variant={app.status === "COMPLETED" ? "success" : "warning"}>{tr(app.status)}</Badge>
             {app.cessionAccredito && <Badge variant="info">Cessione credito</Badge>}
             {app.sconfoFattura && <Badge variant="info">Sconto fattura</Badge>}
             {app.technicalAsseveration && <Badge variant="info">Asseverazione</Badge>}

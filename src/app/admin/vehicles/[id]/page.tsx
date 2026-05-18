@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Attachments } from "@/components/app/attachments";
 import { formatDate, formatDateTime, formatCurrency, daysUntil } from "@/lib/utils";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { Save, Loader2, Plus, Trash2, Fuel, Wrench, ShieldCheck, AlertTriangle, FileText } from "lucide-react";
 import { toast } from "sonner";
 
@@ -101,7 +101,7 @@ export default function VehicleDetail({ params }: { params: Promise<{ id: string
 
   return (
     <div className="space-y-6">
-      <PageHeader title={`${v.plate}`} description={`${v.brand || ""} ${v.model || ""} · ${t(v.type)}${v.assignedTo ? ` · ${v.assignedTo.name}` : ""}`} back="/admin/vehicles"
+      <PageHeader title={`${v.plate}`} description={`${v.brand || ""} ${v.model || ""} · ${tr(v.type)}${v.assignedTo ? ` · ${v.assignedTo.name}` : ""}`} back="/admin/vehicles"
         actions={
           <div className="flex gap-2">
             {!editing && <Button variant="outline" onClick={() => setEditing(true)}>Modifica</Button>}
@@ -206,7 +206,7 @@ export default function VehicleDetail({ params }: { params: Promise<{ id: string
                 {v.logs.map((l: any) => (
                   <tr key={l.id} className="border-b last:border-0">
                     <td className="p-3 text-xs">{formatDate(l.date)}</td>
-                    <td><Badge variant="muted">{LOG_TYPES.find(o => o.v === l.type)?.icon} {t(l.type)}</Badge></td>
+                    <td><Badge variant="muted">{LOG_TYPES.find(o => o.v === l.type)?.icon} {tr(l.type)}</Badge></td>
                     <td>{l.description}{l.invoiceRef && <div className="text-xs text-muted-foreground">Fattura: {l.invoiceRef}</div>}</td>
                     <td className="text-right text-xs">{l.km ? l.km.toLocaleString("it-IT") : "—"}</td>
                     <td className="text-right text-xs">{l.cost ? formatCurrency(l.cost) : "—"}</td>

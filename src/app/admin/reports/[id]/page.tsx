@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import Link from "next/link";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
@@ -71,7 +71,7 @@ export default async function ReportDetail({ params, searchParams }: { params: P
                 <div className="flex justify-between"><span>Materiali</span><span>{formatCurrency(r.totalMaterialAmount)}</span></div>
                 <div className="flex justify-between font-bold text-lg pt-2 border-t border-border"><span>Totale</span><span className="text-primary">{formatCurrency(r.totalAmount)}</span></div>
                 <div className="pt-3 flex flex-col gap-2 text-xs">
-                  <div className="flex justify-between"><span>Stato:</span><Badge variant={r.status === "SUBMITTED" ? "success" : "muted"}>{t(r.status)}</Badge></div>
+                  <div className="flex justify-between"><span>Stato:</span><Badge variant={r.status === "SUBMITTED" ? "success" : "muted"}>{tr(r.status)}</Badge></div>
                   {r.signedAt && <div className="flex justify-between"><span>Firmato:</span><span>{formatDateTime(r.signedAt)}</span></div>}
                   {r.immutable && <div className="text-amber-600 flex items-center gap-1">🔒 Documento firmato, non modificabile</div>}
                   {r.customerEmailSent && <div className="flex items-center gap-1 text-emerald-600"><Mail className="h-3 w-3" /> Email inviata</div>}

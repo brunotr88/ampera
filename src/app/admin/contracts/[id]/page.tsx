@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
@@ -38,7 +38,7 @@ export default async function PurchaseOrdersPage() {
                 <TableCell className="text-xs">{formatDate(o.issueDate)}</TableCell>
                 <TableCell className="text-xs">{o.expectedDate ? formatDate(o.expectedDate) : "—"}</TableCell>
                 <TableCell className="text-right font-semibold">{formatCurrency(o.total)}</TableCell>
-                <TableCell><Badge variant={STATUS_VARIANT[o.status]}>{t(o.status)}</Badge></TableCell>
+                <TableCell><Badge variant={STATUS_VARIANT[o.status]}>{tr(o.status)}</Badge></TableCell>
                 <TableCell><Link href={`/admin/purchase-orders/${o.id}`} className="text-primary text-xs font-semibold hover:underline">Apri</Link></TableCell>
               </TableRow>
             ))}

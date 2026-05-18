@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { useParams, useRouter } from "next/navigation";
 import { PageHeader } from "@/components/app/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

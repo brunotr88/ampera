@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { Badge } from "@/components/ui/badge";
 import { SortableTable, type Column } from "@/components/ui/sortable-table";
 import { Mail, Phone } from "lucide-react";
@@ -17,7 +17,7 @@ export function CustomersTable({ data }: { data: any[] }) {
         </div>
       ),
     },
-    { key: "type", header: "Tipo", sortable: true, cell: r => <Badge variant="outline">{t(r.type)}</Badge> },
+    { key: "type", header: "Tipo", sortable: true, cell: r => <Badge variant="outline">{tr(r.type)}</Badge> },
     { key: "vatNumber", header: "P.IVA / CF", sortable: true, accessor: r => r.vatNumber || r.fiscalCode, cell: r => <span className="font-mono text-xs">{r.vatNumber || r.fiscalCode || "—"}</span> },
     {
       key: "contact", header: "Contatti",
@@ -30,7 +30,7 @@ export function CustomersTable({ data }: { data: any[] }) {
     },
     { key: "plants", header: "Imp.", sortable: true, align: "right", accessor: r => r._count?.plants || 0 },
     { key: "projects", header: "Comm.", sortable: true, align: "right", accessor: r => r._count?.projects || 0 },
-    { key: "status", header: "Stato", sortable: true, cell: r => <Badge variant={r.status === "ACTIVE" ? "success" : r.status === "BLOCKED" ? "destructive" : "muted"}>{t(r.status)}</Badge> },
+    { key: "status", header: "Stato", sortable: true, cell: r => <Badge variant={r.status === "ACTIVE" ? "success" : r.status === "BLOCKED" ? "destructive" : "muted"}>{tr(r.status)}</Badge> },
     { key: "createdAt", header: "Aggiunto", sortable: true, accessor: r => new Date(r.createdAt), cell: r => <span className="text-xs text-muted-foreground">{new Date(r.createdAt).toLocaleDateString("it-IT")}</span> },
     { key: "id", header: "", cell: r => <Link href={`/admin/customers/${r.id}`} className="text-primary text-xs font-semibold hover:underline">Apri</Link> },
   ];

@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { SignaturePadComponent } from "@/components/app/signature-pad";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { formatDateTime } from "@/lib/utils";
 import { Printer, Edit, FileSignature, X, Loader2, Trash2, Mail, RotateCcw, ExternalLink, Pencil, Save } from "lucide-react";
 import { toast } from "sonner";
@@ -101,7 +101,7 @@ export default function PrivacyDocDetail({ params }: { params: Promise<{ id: str
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <PageHeader title={t(doc.type)} description={`v${doc.version} · ${doc.subjectName || "—"}`} back="/admin/privacy"
+      <PageHeader title={tr(doc.type)} description={`v${doc.version} · ${doc.subjectName || "—"}`} back="/admin/privacy"
         actions={
           <div className="flex gap-2 flex-wrap">
             <Button asChild variant="outline"><Link href={`/print/privacy/${doc.id}?print=1`} target="_blank"><Printer className="h-4 w-4" /> Stampa</Link></Button>

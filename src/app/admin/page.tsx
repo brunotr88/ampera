@@ -1,5 +1,5 @@
 import { requireSession } from "@/lib/permissions";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -74,7 +74,7 @@ export default async function DashboardPage() {
                       <div className="font-medium truncate">{r.customer.companyName || `${r.customer.name} ${r.customer.surname || ""}`} · #{r.code}</div>
                       <div className="text-xs text-muted-foreground">{r.technician.name} · {timeAgo(r.updatedAt)}</div>
                     </div>
-                    <Badge variant={r.status === "SUBMITTED" ? "success" : r.status === "DRAFT" ? "warning" : "muted"}>{t(r.status)}</Badge>
+                    <Badge variant={r.status === "SUBMITTED" ? "success" : r.status === "DRAFT" ? "warning" : "muted"}>{tr(r.status)}</Badge>
                     <Link href={`/admin/reports/${r.id}`} className="text-xs font-medium text-primary hover:underline">Apri</Link>
                   </li>
                 ))}

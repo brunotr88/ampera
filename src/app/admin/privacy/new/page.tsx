@@ -9,7 +9,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { Save, Loader2, Users, Building2, User, Search, X, CheckCircle2, Shield, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
@@ -189,7 +189,7 @@ function NewPrivacyForm() {
                     {selectedSubject.email && <span>{selectedSubject.email}</span>}
                     {selectedSubject.vatNumber && <span>P.IVA {selectedSubject.vatNumber}</span>}
                     {selectedSubject.fiscalCode && <span>CF {selectedSubject.fiscalCode}</span>}
-                    {selectedSubject.role && <span>{t(selectedSubject.role)}</span>}
+                    {selectedSubject.role && <span>{tr(selectedSubject.role)}</span>}
                   </div>
                   {autoFilled && <div className="mt-2 text-xs text-emerald-700 dark:text-emerald-300">✓ Dati auto-compilati pronti per il documento</div>}
                 </div>
@@ -234,7 +234,7 @@ function NewPrivacyForm() {
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">{tpl.description}</div>
                       <div className="flex items-center gap-2 mt-2 text-[10px]">
-                        <Badge variant="muted">{t(tpl.audience)}</Badge>
+                        <Badge variant="muted">{tr(tpl.audience)}</Badge>
                         {tpl.consentRequired && <Badge variant="info">richiede firma</Badge>}
                       </div>
                     </div>

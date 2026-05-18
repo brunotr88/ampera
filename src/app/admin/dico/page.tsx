@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
@@ -30,7 +30,7 @@ export default async function DicoPage() {
                 <TableCell>{d.plant.name}</TableCell>
                 <TableCell className="text-xs">{d.rtName || "—"}</TableCell>
                 <TableCell className="text-xs">{d.issueDate ? formatDate(d.issueDate) : "—"}</TableCell>
-                <TableCell><Badge variant={d.status === "ISSUED" ? "success" : d.status === "SENT_TO_INAIL" ? "info" : "muted"}>{t(d.status)}</Badge></TableCell>
+                <TableCell><Badge variant={d.status === "ISSUED" ? "success" : d.status === "SENT_TO_INAIL" ? "info" : "muted"}>{tr(d.status)}</Badge></TableCell>
               </TableRow>
             ))}
           </TableBody>

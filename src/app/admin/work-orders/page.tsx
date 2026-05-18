@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
@@ -51,8 +51,8 @@ export default async function WorkOrdersPage() {
                 <TableCell>{w.customer.companyName || `${w.customer.name} ${w.customer.surname || ""}`}</TableCell>
                 <TableCell className="text-xs">{w.scheduledDate ? formatDateTime(w.scheduledDate) : "—"}</TableCell>
                 <TableCell>{w.assignedTo?.name || <span className="text-muted-foreground italic">Non assegnato</span>}</TableCell>
-                <TableCell><Badge variant={w.priority === "EMERGENCY" ? "destructive" : w.priority === "URGENT" ? "warning" : "muted"}>{t(w.priority)}</Badge></TableCell>
-                <TableCell><Badge variant={STATUS_VARIANT[w.status]}>{t(w.status)}</Badge></TableCell>
+                <TableCell><Badge variant={w.priority === "EMERGENCY" ? "destructive" : w.priority === "URGENT" ? "warning" : "muted"}>{tr(w.priority)}</Badge></TableCell>
+                <TableCell><Badge variant={STATUS_VARIANT[w.status]}>{tr(w.status)}</Badge></TableCell>
                 <TableCell><Link href={`/admin/work-orders/${w.id}`} className="text-primary text-xs font-semibold hover:underline">Apri</Link></TableCell>
               </TableRow>
             ))}

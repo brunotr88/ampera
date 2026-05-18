@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { Building2, Plus } from "lucide-react";
 
 export default async function AssetsPage() {
@@ -40,7 +40,7 @@ export default async function AssetsPage() {
                 <TableCell className="text-xs">{formatDate(a.acquisitionDate)}</TableCell>
                 <TableCell className="text-right font-semibold">{formatCurrency(a.purchasePrice)}</TableCell>
                 <TableCell className="text-xs">{a.amortizationYears}y</TableCell>
-                <TableCell><Badge variant={a.status === "ACTIVE" ? "success" : a.status === "DISPOSED" || a.status === "WRITTEN_OFF" ? "destructive" : "muted"}>{t(a.status)}</Badge></TableCell>
+                <TableCell><Badge variant={a.status === "ACTIVE" ? "success" : a.status === "DISPOSED" || a.status === "WRITTEN_OFF" ? "destructive" : "muted"}>{tr(a.status)}</Badge></TableCell>
                 <TableCell><Link href={`/admin/assets/${a.id}`} className="text-primary text-xs font-semibold hover:underline">Apri</Link></TableCell>
               </TableRow>
             ))}

@@ -10,7 +10,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { formatDateTime } from "@/lib/utils";
 import { Save, Loader2, Trash2, Edit, X } from "lucide-react";
 import { toast } from "sonner";
@@ -63,7 +63,7 @@ export default function CalendarEventPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <PageHeader title={event.title} description={`${t(event.type)} · proprietario ${event.owner.name}`} back="/admin/calendar"
+      <PageHeader title={event.title} description={`${tr(event.type)} · proprietario ${event.owner.name}`} back="/admin/calendar"
         actions={
           <div className="flex gap-2">
             {!editing && <Button variant="outline" onClick={() => setEditing(true)}><Edit className="h-4 w-4" /> Modifica</Button>}
@@ -102,7 +102,7 @@ export default function CalendarEventPage({ params }: { params: Promise<{ id: st
             </>
           ) : (
             <>
-              <div><strong>Tipo:</strong> <Badge>{t(event.type)}</Badge></div>
+              <div><strong>Tipo:</strong> <Badge>{tr(event.type)}</Badge></div>
               <div><strong>Stato:</strong> <Badge variant={event.status === "CONFIRMED" ? "success" : event.status === "CANCELLED" ? "destructive" : "muted"}>{event.status === "CONFIRMED" ? "Confermato" : event.status === "CANCELLED" ? "Annullato" : "Provvisorio"}</Badge></div>
               <div><strong>Inizio:</strong> {formatDateTime(event.startsAt)}</div>
               <div><strong>Fine:</strong> {formatDateTime(event.endsAt)}</div>

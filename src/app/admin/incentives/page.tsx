@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
@@ -71,7 +71,7 @@ export default async function IncentivesPage() {
                       <td className="max-w-xs truncate">{a.workDescription}</td>
                       <td className="text-right">{formatCurrency(a.totalAmount)}</td>
                       <td className="text-right font-semibold text-emerald-600">{formatCurrency(a.deductibleAmount)} ({a.deductiblePercentage}%)</td>
-                      <td><Badge variant={a.status === "COMPLETED" ? "success" : a.status === "CANCELLED" ? "muted" : "warning"}>{t(a.status)}</Badge></td>
+                      <td><Badge variant={a.status === "COMPLETED" ? "success" : a.status === "CANCELLED" ? "muted" : "warning"}>{tr(a.status)}</Badge></td>
                       <td><Link href={`/admin/incentives/${a.id}`} className="text-primary text-xs font-semibold">Apri</Link></td>
                     </tr>
                   );

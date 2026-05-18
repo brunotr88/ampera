@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { Receipt, Plus, Loader2 } from "lucide-react";
 
 export default function PurchaseInvoicesPage() {
@@ -45,7 +45,7 @@ export default function PurchaseInvoicesPage() {
                   <td className="text-right">{formatCurrency(i.subtotal)}</td>
                   <td className="text-right">{formatCurrency(i.vatTotal)}</td>
                   <td className="text-right font-semibold">{formatCurrency(i.total)}</td>
-                  <td><Badge variant={i.paymentStatus === "PAID" ? "success" : i.paymentStatus === "OVERDUE" ? "destructive" : "warning"}>{t(i.paymentStatus)}</Badge></td>
+                  <td><Badge variant={i.paymentStatus === "PAID" ? "success" : i.paymentStatus === "OVERDUE" ? "destructive" : "warning"}>{tr(i.paymentStatus)}</Badge></td>
                   <td className="text-xs">{i.lines?.length || 0}</td>
                   <td><Link href={`/admin/purchase-invoices/${i.id}`} className="text-primary text-xs font-semibold hover:underline">Apri</Link></td>
                 </tr>

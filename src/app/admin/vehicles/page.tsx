@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDate, daysUntil } from "@/lib/utils";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { Truck, Plus, AlertTriangle, ShieldCheck, Wrench, Calendar } from "lucide-react";
 
 export default async function VehiclesPage() {
@@ -65,7 +65,7 @@ export default async function VehiclesPage() {
                 <TableRow key={v.id}>
                   <TableCell><Link href={`/admin/vehicles/${v.id}`} className="font-mono font-semibold hover:underline">{v.plate}</Link></TableCell>
                   <TableCell><div className="text-sm">{v.brand} {v.model}</div>{v.year && <div className="text-xs text-muted-foreground">{v.year}</div>}</TableCell>
-                  <TableCell><Badge variant="outline">{t(v.type)}</Badge></TableCell>
+                  <TableCell><Badge variant="outline">{tr(v.type)}</Badge></TableCell>
                   <TableCell className="text-sm">{v.assignedTo?.name || <span className="text-muted-foreground italic">—</span>}</TableCell>
                   <TableCell className="text-right font-mono text-sm">{v.currentKm.toLocaleString("it-IT")}</TableCell>
                   <TableCell className="text-xs">

@@ -195,3 +195,7 @@ export function t(value: string | null | undefined): string {
   if (!value) return "—";
   return (LABELS as Record<string, string>)[value] || value;
 }
+
+
+/** Alias di t() per evitare conflitti col minifier SWC */
+export const tr = t;

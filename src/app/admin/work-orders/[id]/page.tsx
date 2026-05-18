@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import Link from "next/link";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
@@ -31,8 +31,8 @@ export default async function WODetail({ params }: { params: Promise<{ id: strin
             {wo.plant && <div><strong>Impianto:</strong> {wo.plant.name}</div>}
             {wo.scheduledDate && <div><strong>Quando:</strong> {formatDateTime(wo.scheduledDate)}</div>}
             <div><strong>Tecnico:</strong> {wo.assignedTo?.name || "Da assegnare"}</div>
-            <div><strong>Priorità:</strong> <Badge variant={wo.priority === "EMERGENCY" ? "destructive" : "muted"}>{t(wo.priority)}</Badge></div>
-            <div><strong>Stato:</strong> <Badge variant="info">{t(wo.status)}</Badge></div>
+            <div><strong>Priorità:</strong> <Badge variant={wo.priority === "EMERGENCY" ? "destructive" : "muted"}>{tr(wo.priority)}</Badge></div>
+            <div><strong>Stato:</strong> <Badge variant="info">{tr(wo.status)}</Badge></div>
             {wo.description && <div className="whitespace-pre-wrap pt-2 border-t border-border">{wo.description}</div>}
           </CardContent>
         </Card>

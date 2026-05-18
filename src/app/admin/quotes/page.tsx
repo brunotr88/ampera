@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
@@ -34,7 +34,7 @@ export default async function QuotesPage() {
                 <TableCell className="text-xs">{formatDate(q.createdAt)}</TableCell>
                 <TableCell className="text-xs">{q.validUntil ? formatDate(q.validUntil) : "—"}</TableCell>
                 <TableCell className="text-right font-semibold">{formatCurrency(q.total)}</TableCell>
-                <TableCell><Badge variant={STATUS_VARIANT[q.status]}>{t(q.status)}</Badge></TableCell>
+                <TableCell><Badge variant={STATUS_VARIANT[q.status]}>{tr(q.status)}</Badge></TableCell>
                 <TableCell>
                   <div className="flex gap-2">
                     <Link href={`/admin/quotes/${q.id}`} className="text-primary text-xs font-semibold hover:underline">Apri</Link>

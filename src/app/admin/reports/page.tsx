@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
@@ -50,7 +50,7 @@ export default async function ReportsPage() {
                 <TableCell className="text-xs">{formatDateTime(r.signedAt || r.endedAt || r.createdAt)}</TableCell>
                 <TableCell className="text-right">{r.totalHours?.toFixed(1) ?? "—"}</TableCell>
                 <TableCell className="text-right font-semibold">{formatCurrency(r.totalAmount)}</TableCell>
-                <TableCell><Badge variant={r.status === "SUBMITTED" ? "success" : r.status === "INVOICED" ? "info" : "muted"}>{t(r.status)}</Badge></TableCell>
+                <TableCell><Badge variant={r.status === "SUBMITTED" ? "success" : r.status === "INVOICED" ? "info" : "muted"}>{tr(r.status)}</Badge></TableCell>
                 <TableCell>
                   <div className="flex gap-2">
                     <Link href={`/admin/reports/${r.id}`} className="text-primary text-xs font-semibold hover:underline">Apri</Link>

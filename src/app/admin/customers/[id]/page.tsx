@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import Link from "next/link";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
@@ -63,7 +63,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             {customer.phone && <div className="flex items-center gap-1"><Phone className="h-3 w-3" /> {customer.phone}</div>}
             {customer.mobile && <div className="flex items-center gap-1"><Phone className="h-3 w-3" /> {customer.mobile}</div>}
             <div className="pt-2 flex gap-2 flex-wrap">
-              <Badge variant={customer.status === "ACTIVE" ? "success" : "muted"}>{t(customer.status)}</Badge>
+              <Badge variant={customer.status === "ACTIVE" ? "success" : "muted"}>{tr(customer.status)}</Badge>
               {customer.gdprConsent && <Badge variant="info">GDPR ✓</Badge>}
             </div>
           </CardContent>
@@ -124,7 +124,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                       <div className="font-medium text-sm">{w.title}</div>
                       <div className="text-xs text-muted-foreground">{w.scheduledDate ? formatDate(w.scheduledDate) : "Non programmato"}</div>
                     </Link>
-                    <Badge variant={w.status === "COMPLETED" ? "success" : w.status === "EMERGENCY" ? "destructive" : "info"}>{t(w.status)}</Badge>
+                    <Badge variant={w.status === "COMPLETED" ? "success" : w.status === "EMERGENCY" ? "destructive" : "info"}>{tr(w.status)}</Badge>
                   </li>
                 ))}
               </ul>

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import Link from "next/link";
 import { PageHeader } from "@/components/app/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
             <button key={t.type} onClick={() => { setForm({ type: t.type }); setOpen(true); }} className="text-left bg-card border border-border rounded-xl p-4 lift hover:border-primary/40 transition-colors">
               <div className="flex items-start justify-between mb-2">
                 <Shield className="h-5 w-5 text-primary" />
-                <Badge variant="muted" className="text-[10px]">{t(t.audience)}</Badge>
+                <Badge variant="muted" className="text-[10px]">{tr(t.audience)}</Badge>
               </div>
               <h3 className="font-semibold text-sm">{t.title}</h3>
               <p className="text-xs text-muted-foreground mt-1 line-clamp-3">{t.description}</p>
@@ -103,10 +103,10 @@ export default function PrivacyPage() {
             <TableBody>
               {docs.map(d => (
                 <TableRow key={d.id}>
-                  <TableCell><Badge variant="outline">{t(d.type)}</Badge></TableCell>
+                  <TableCell><Badge variant="outline">{tr(d.type)}</Badge></TableCell>
                   <TableCell className="font-medium">{d.subjectName || "—"}</TableCell>
                   <TableCell className="text-xs">{d.subjectEmail || "—"}</TableCell>
-                  <TableCell><Badge variant="muted">{t(d.audience)}</Badge></TableCell>
+                  <TableCell><Badge variant="muted">{tr(d.audience)}</Badge></TableCell>
                   <TableCell className="text-xs">{formatDate(d.createdAt)}</TableCell>
                   <TableCell><Badge variant={d.signedAt ? "success" : d.revokedAt ? "destructive" : "warning"}>{d.signedAt ? "Firmato" : d.revokedAt ? "Revocato" : "Non firmato"}</Badge></TableCell>
                   <TableCell>

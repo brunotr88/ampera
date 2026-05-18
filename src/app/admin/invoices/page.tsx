@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { t } from "@/lib/labels";
+import { tr } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
@@ -33,13 +33,13 @@ export default async function InvoicesPage() {
             {invoices.map(inv => (
               <TableRow key={inv.id}>
                 <TableCell className="font-mono">{inv.number}</TableCell>
-                <TableCell><Badge variant="outline">{t(inv.type)}</Badge></TableCell>
+                <TableCell><Badge variant="outline">{tr(inv.type)}</Badge></TableCell>
                 <TableCell>{inv.customer.companyName || inv.customer.name}</TableCell>
                 <TableCell className="text-xs">{formatDate(inv.issueDate)}</TableCell>
                 <TableCell className="text-xs">{inv.dueDate ? formatDate(inv.dueDate) : "—"}</TableCell>
                 <TableCell className="text-right font-semibold">{formatCurrency(inv.total)}</TableCell>
-                <TableCell><Badge variant={inv.sdiStatus === "ACCEPTED" || inv.sdiStatus === "DELIVERED" ? "success" : inv.sdiStatus === "REJECTED" ? "destructive" : "muted"}>{t(inv.sdiStatus)}</Badge></TableCell>
-                <TableCell><Badge variant={PAY_VARIANT[inv.paymentStatus]}>{t(inv.paymentStatus)}</Badge></TableCell>
+                <TableCell><Badge variant={inv.sdiStatus === "ACCEPTED" || inv.sdiStatus === "DELIVERED" ? "success" : inv.sdiStatus === "REJECTED" ? "destructive" : "muted"}>{tr(inv.sdiStatus)}</Badge></TableCell>
+                <TableCell><Badge variant={PAY_VARIANT[inv.paymentStatus]}>{tr(inv.paymentStatus)}</Badge></TableCell>
                 <TableCell>
                   <div className="flex gap-2">
                     <Link href={`/admin/invoices/${inv.id}`} className="text-primary text-xs font-semibold hover:underline">Apri</Link>
