@@ -27,11 +27,19 @@ export type PrivacyTemplateOpts = {
   };
   subject?: {
     name?: string;
+    surname?: string;
     fiscalCode?: string;
+    vatNumber?: string;
     email?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    role?: string;
+    companyName?: string;
   };
   dpoEmail?: string;
   consentDate?: Date;
+  customFields?: Record<string, string>;
 };
 
 function header(t: PrivacyTemplateOpts["tenant"]) {
@@ -333,6 +341,225 @@ export const PRIVACY_TEMPLATES: PrivacyTemplate[] = [
     </body></html>`,
   },
 ];
+
+// =====================================================================
+// ADDITIONAL TEMPLATES - aggiunti per copertura compliance completa
+// =====================================================================
+
+const additionalTemplates: PrivacyTemplate[] = [
+  {
+    type: "CUSTOMER_CONSENT",
+    title: "Consenso Trattamento Dati Cliente",
+    description: "Modulo consenso esplicito per finalità contrattuali e operative (separato dall'informativa).",
+    audience: "CUSTOMER",
+    consentRequired: true,
+    generateHtml: (o) => `<!doctype html><html lang="it"><head><meta charset="utf-8"><title>Consenso Cliente</title>${styles()}</head><body>
+      ${header(o.tenant)}
+      <h1 style="font-size:16px">Consenso al trattamento dei dati personali</h1>
+      <p>Il sottoscritto <strong>${o.subject?.companyName || `${o.subject?.name || "[Nome]"} ${o.subject?.surname || ""}`}</strong>${o.subject?.fiscalCode ? ` - CF ${o.subject.fiscalCode}` : ""}${o.subject?.vatNumber ? ` - P.IVA ${o.subject.vatNumber}` : ""}, acquisita preventivamente l'informativa ex art. 13 GDPR del titolare ${o.tenant.name},</p>
+      <h2>Dichiara di prestare il proprio consenso a:</h2>
+      <div class="consent">
+        <label><span class="checkbox"></span><span><strong>a) Finalita contrattuali</strong> (obbligatorio): trattamento dati per esecuzione contratto, fatturazione, comunicazioni di servizio, gestione interventi e impianti.</span></label>
+      </div>
+      <div class="consent">
+        <label><span class="checkbox"></span><span><strong>b) Obblighi di legge</strong> (obbligatorio): adempimenti fiscali, fatturazione elettronica SDI, conservazione documentale 10 anni, normative DM 37/08 e DPR 462/01.</span></label>
+      </div>
+      <div class="consent">
+        <label><span class="checkbox"></span><span><strong>c) Marketing diretto</strong> (facoltativo): comunicazioni commerciali, offerte, newsletter via email/SMS/WhatsApp.</span></label>
+      </div>
+      <div class="consent">
+        <label><span class="checkbox"></span><span><strong>d) Profilazione</strong> (facoltativo): analisi preferenze e comportamenti per personalizzare offerte.</span></label>
+      </div>
+      <div class="consent">
+        <label><span class="checkbox"></span><span><strong>e) Comunicazione a terzi commerciali</strong> (facoltativo): condivisione con partner per offerte loro.</span></label>
+      </div>
+      <p style="font-size:11px;color:#6b7280;margin-top:14px">Il consenso e revocabile in ogni momento contattando ${o.tenant.email || "[email]"} o PEC ${o.tenant.pec || "[pec]"}.</p>
+      <div style="margin-top:30px;display:flex;gap:30px">
+        <div style="flex:1"><div>Luogo, ${o.tenant.city || "—"} · Data ____________</div></div>
+        <div style="flex:1"><div>Firma:</div><div class="sig-line">${o.subject?.companyName || `${o.subject?.name || ""} ${o.subject?.surname || ""}`.trim() || "_______________________"}</div></div>
+      </div>
+      <div class="footer">Consenso GDPR art. 6.1.a · v1.0</div>
+      <script>setTimeout(()=>{if(location.search.includes('print=1'))window.print()},300)</script>
+    </body></html>`,
+  },
+  {
+    type: "EMPLOYEE_CONSENT",
+    title: "Consenso Dipendente/Operatore",
+    description: "Consenso esplicito a geolocalizzazione, foto, firma grafometrica, biometria su app aziendale.",
+    audience: "EMPLOYEE",
+    consentRequired: true,
+    generateHtml: (o) => `<!doctype html><html lang="it"><head><meta charset="utf-8"><title>Consenso Operatore</title>${styles()}</head><body>
+      ${header(o.tenant)}
+      <h1 style="font-size:16px">Consenso al trattamento dati - Operatore / Dipendente</h1>
+      <p>Il sottoscritto <strong>${o.subject?.name || ""} ${o.subject?.surname || ""}</strong>${o.subject?.fiscalCode ? ` - CF ${o.subject.fiscalCode}` : ""}${o.subject?.role ? `, in qualita di ${o.subject.role}` : ""}, dipendente / collaboratore di <strong>${o.tenant.name}</strong>, acquisita l'informativa privacy lavoratori,</p>
+
+      <h2>Presta consenso esplicito al trattamento dei seguenti dati:</h2>
+
+      <div class="consent">
+        <label><span class="checkbox"></span><span><strong>1. Geolocalizzazione</strong> tramite app Ampera (coordinate GPS al check-in giornata, apertura/chiusura interventi, scatto foto). Finalita: certificare presenza in cantiere, sicurezza personale, tracciabilita verso cliente. Conservazione 12 mesi. NON usato per controllo a distanza disciplinare.</span></label>
+      </div>
+      <div class="consent">
+        <label><span class="checkbox"></span><span><strong>2. Fotografie</strong> scattate in cantiere con dispositivi aziendali per documentazione interventi. Possibili tracce visive della persona.</span></label>
+      </div>
+      <div class="consent">
+        <label><span class="checkbox"></span><span><strong>3. Firma grafometrica</strong> e biometria (Face ID/impronta) per autenticazione su dispositivi aziendali.</span></label>
+      </div>
+      <div class="consent">
+        <label><span class="checkbox"></span><span><strong>4. Dati telematici</strong> e log accessi sul gestionale Ampera per finalita di sicurezza e audit.</span></label>
+      </div>
+
+      <p style="font-size:11px;color:#6b7280;margin-top:14px">Conforme art. 4 Statuto Lavoratori L. 300/70 e Provv. Garante 24/03/2011. Revocabile in ogni momento con comunicazione scritta al datore di lavoro.</p>
+
+      <div style="margin-top:30px;display:flex;gap:30px">
+        <div style="flex:1"><div>Data: ____________</div></div>
+        <div style="flex:1"><div>Firma del lavoratore:</div><div class="sig-line">${o.subject?.name || ""} ${o.subject?.surname || ""}</div></div>
+      </div>
+      <div class="footer">Consenso Lavoratore · v1.0</div>
+      <script>setTimeout(()=>{if(location.search.includes('print=1'))window.print()},300)</script>
+    </body></html>`,
+  },
+  {
+    type: "CONTRACTOR_NDA",
+    title: "NDA Fornitori",
+    description: "Accordo di riservatezza per fornitori e collaboratori esterni con accesso a dati riservati clienti.",
+    audience: "BOTH",
+    consentRequired: true,
+    generateHtml: (o) => `<!doctype html><html lang="it"><head><meta charset="utf-8"><title>NDA Fornitore</title>${styles()}</head><body>
+      ${header(o.tenant)}
+      <h1 style="font-size:18px;text-align:center">Accordo di Riservatezza (NDA)</h1>
+      <p>Tra <strong>${o.tenant.name}</strong>${o.tenant.vatNumber ? ` (P.IVA ${o.tenant.vatNumber})` : ""} <strong>(Divulgatore)</strong></p>
+      <p>e <strong>${o.subject?.companyName || `${o.subject?.name || ""} ${o.subject?.surname || ""}`}</strong>${o.subject?.vatNumber ? ` (P.IVA ${o.subject.vatNumber})` : ""}${o.subject?.fiscalCode ? ` - CF ${o.subject.fiscalCode}` : ""} <strong>(Ricevente)</strong>.</p>
+
+      <h2>1. Oggetto</h2>
+      <p>Il Ricevente, nell'esecuzione di prestazioni / fornitura beni in favore del Divulgatore, potra venire a conoscenza di informazioni riservate concernenti: anagrafiche clienti, dati impianti, progetti tecnici, listini prezzi, processi aziendali, know-how, accesso a sistemi informativi.</p>
+
+      <h2>2. Obbligo di riservatezza</h2>
+      <p>Il Ricevente si impegna a: (a) non divulgare a terzi alcuna informazione riservata; (b) usarla esclusivamente per l'esecuzione del rapporto; (c) adottare misure di sicurezza adeguate a protezione; (d) imporre lo stesso obbligo ai propri dipendenti/collaboratori.</p>
+
+      <h2>3. Durata</h2>
+      <p>Il presente accordo ha durata di <strong>5 anni</strong> dalla data di sottoscrizione e sopravvive alla cessazione del rapporto contrattuale.</p>
+
+      <h2>4. Sanzioni</h2>
+      <p>In caso di violazione, il Ricevente sara tenuto al risarcimento integrale del danno subito dal Divulgatore, oltre a eventuali penali contrattuali.</p>
+
+      <h2>5. GDPR</h2>
+      <p>Se il Ricevente tratta dati personali per conto del Divulgatore, sara designato <strong>Responsabile del trattamento ex art. 28 GDPR</strong> mediante atto separato (DPA).</p>
+
+      <h2>6. Foro competente</h2>
+      <p>Per ogni controversia e competente in via esclusiva il Foro di <strong>Treviso</strong>.</p>
+
+      <div style="margin-top:40px;display:flex;gap:30px">
+        <div style="flex:1"><strong>Divulgatore</strong><br>${o.tenant.name}<br><div class="sig-line">_______________________</div></div>
+        <div style="flex:1"><strong>Ricevente</strong><br>${o.subject?.companyName || `${o.subject?.name || ""} ${o.subject?.surname || ""}`}<br><div class="sig-line">_______________________</div></div>
+      </div>
+      <p style="margin-top:14px;font-size:10px">Luogo: ${o.tenant.city || "—"} · Data: ${(o.consentDate || new Date()).toLocaleDateString("it-IT")}</p>
+      <script>setTimeout(()=>{if(location.search.includes('print=1'))window.print()},300)</script>
+    </body></html>`,
+  },
+  {
+    type: "DATA_PROCESSING_AGREEMENT",
+    title: "DPA - Nomina Responsabile del Trattamento",
+    description: "Accordo ex art. 28 GDPR per fornitori che trattano dati personali per conto del titolare.",
+    audience: "BOTH",
+    consentRequired: true,
+    generateHtml: (o) => `<!doctype html><html lang="it"><head><meta charset="utf-8"><title>DPA art. 28 GDPR</title>${styles()}</head><body>
+      ${header(o.tenant)}
+      <h1 style="font-size:18px;text-align:center">Atto di Nomina del Responsabile del Trattamento</h1>
+      <p style="text-align:center;color:#6b7280;font-size:11px">ex art. 28 Reg. UE 2016/679 (GDPR)</p>
+
+      <p><strong>Titolare del trattamento:</strong> ${o.tenant.name}${o.tenant.vatNumber ? ` (P.IVA ${o.tenant.vatNumber})` : ""}, in seguito "Titolare".</p>
+      <p><strong>Responsabile esterno designato:</strong> <strong>${o.subject?.companyName || `${o.subject?.name || ""} ${o.subject?.surname || ""}`}</strong>${o.subject?.vatNumber ? ` (P.IVA ${o.subject.vatNumber})` : ""}, in seguito "Responsabile".</p>
+
+      <h2>1. Oggetto e finalità</h2>
+      <p>Il Titolare nomina il Responsabile per il trattamento di dati personali necessario all'esecuzione di prestazioni (es. servizi tecnici, hosting, consulenza fiscale, manutenzione software).</p>
+
+      <h2>2. Categorie di dati e di interessati</h2>
+      <ul>
+        <li>Categorie di interessati: clienti, dipendenti, fornitori del Titolare.</li>
+        <li>Categorie di dati: anagrafici, di contatto, fiscali, tecnici impianti, fotografie, eventuali dati biometrici (firme).</li>
+        <li>Eventuali dati particolari (categorie speciali art. 9 GDPR): solo se strettamente necessario e con specifica autorizzazione.</li>
+      </ul>
+
+      <h2>3. Obblighi del Responsabile</h2>
+      <ul>
+        <li>Trattare i dati solo per le finalità definite dal Titolare</li>
+        <li>Garantire la riservatezza dei propri dipendenti incaricati</li>
+        <li>Adottare misure di sicurezza tecniche e organizzative adeguate (art. 32 GDPR): crittografia, autenticazione, log accessi, backup, gestione incidenti</li>
+        <li>Notificare al Titolare ogni violazione dei dati (data breach) entro 24 ore</li>
+        <li>Assistere il Titolare nel rispondere alle richieste degli interessati (artt. 15-22 GDPR)</li>
+        <li>Cooperare con l'Autorità Garante</li>
+        <li>Cancellare o restituire i dati al termine del rapporto, distruggendo le copie</li>
+        <li>NON ricorrere a sub-responsabili senza autorizzazione scritta del Titolare</li>
+        <li>NON trasferire dati extra-UE senza adeguate garanzie</li>
+      </ul>
+
+      <h2>4. Sub-responsabili autorizzati</h2>
+      <p>Il Titolare autorizza in via generale il Responsabile a ricorrere a sub-responsabili, fermo restando l'obbligo di darne informazione preventiva e di stipulare con essi accordi di pari tenore.</p>
+
+      <h2>5. Audit e ispezioni</h2>
+      <p>Il Titolare ha diritto di effettuare audit (anche tramite terzi) per verificare la conformita, con preavviso di 15 giorni.</p>
+
+      <h2>6. Durata e cessazione</h2>
+      <p>Il presente atto ha la stessa durata del contratto principale. In caso di cessazione, il Responsabile restituisce o cancella tutti i dati entro 30 giorni e fornisce attestazione scritta.</p>
+
+      <h2>7. Responsabilità</h2>
+      <p>Il Responsabile e direttamente responsabile per i danni causati dal trattamento se ha agito in modo difforme o contrario alle istruzioni del Titolare (art. 82 GDPR).</p>
+
+      <div style="margin-top:40px;display:flex;gap:30px">
+        <div style="flex:1"><strong>Titolare</strong><br>${o.tenant.name}<br><div class="sig-line">_______________________</div></div>
+        <div style="flex:1"><strong>Responsabile</strong><br>${o.subject?.companyName || `${o.subject?.name || ""} ${o.subject?.surname || ""}`}<br><div class="sig-line">_______________________</div></div>
+      </div>
+      <p style="margin-top:14px;font-size:10px">Data: ${(o.consentDate || new Date()).toLocaleDateString("it-IT")}</p>
+      <script>setTimeout(()=>{if(location.search.includes('print=1'))window.print()},300)</script>
+    </body></html>`,
+  },
+  {
+    type: "COOKIE_BANNER",
+    title: "Cookie Policy",
+    description: "Informativa estesa cookie e Privacy Policy per il sito web aziendale.",
+    audience: "CUSTOMER",
+    consentRequired: false,
+    generateHtml: (o) => `<!doctype html><html lang="it"><head><meta charset="utf-8"><title>Cookie Policy</title>${styles()}</head><body>
+      ${header(o.tenant)}
+      <h1 style="font-size:18px">Cookie Policy</h1>
+      <p>Il sito ${o.tenant.email ? `(www.${(o.tenant.email.split("@")[1] || "azienda.it")})` : ""} utilizza cookie e tecnologie similari per migliorare l'esperienza utente. Ai sensi del Provv. Garante 10/06/2021, la presente informativa specifica i cookie utilizzati.</p>
+
+      <h2>Tipologie di cookie</h2>
+      <h3>Cookie tecnici (sempre attivi - non richiedono consenso)</h3>
+      <ul>
+        <li><strong>Sessione di autenticazione:</strong> mantengono l'utente loggato</li>
+        <li><strong>Preferenze tema:</strong> ricordano dark/light mode</li>
+        <li><strong>CSRF:</strong> protezione da attacchi cross-site</li>
+      </ul>
+
+      <h3>Cookie analitici (richiedono consenso)</h3>
+      <ul>
+        <li><strong>Google Analytics 4</strong> (anonimizzato): misurazione traffico aggregato. Durata 14 mesi.</li>
+        <li><strong>Hotjar / Microsoft Clarity:</strong> mappe di calore per UX (NO se non attivati).</li>
+      </ul>
+
+      <h3>Cookie di marketing (richiedono consenso)</h3>
+      <ul>
+        <li><strong>Meta Pixel:</strong> targeting remarketing Facebook/Instagram (NO se non attivato)</li>
+        <li><strong>Google Ads:</strong> conversion tracking (NO se non attivato)</li>
+      </ul>
+
+      <h2>Come gestire i cookie</h2>
+      <p>Il banner cookie permette di accettare/rifiutare per categoria. Puoi modificare il consenso in ogni momento dalle impostazioni del sito o cancellando i cookie del browser.</p>
+
+      <h2>Titolare del trattamento</h2>
+      <p><strong>${o.tenant.name}</strong>${o.tenant.vatNumber ? ` - P.IVA ${o.tenant.vatNumber}` : ""}<br>${[o.tenant.address, o.tenant.city, o.tenant.province, o.tenant.zip].filter(Boolean).join(", ")}<br>Email: ${o.tenant.email || "—"} ${o.tenant.pec ? `· PEC: ${o.tenant.pec}` : ""}</p>
+
+      <h2>Diritti dell'interessato</h2>
+      <p>Per esercitare i diritti previsti dagli artt. 15-22 GDPR (accesso, rettifica, cancellazione, opposizione, portabilita) scrivi a ${o.tenant.email || "[email]"} o invia PEC a ${o.tenant.pec || "[pec]"}. Hai diritto di proporre reclamo al Garante (www.garanteprivacy.it).</p>
+
+      <div class="footer">Cookie Policy v1.0 · Aggiornata ${(o.consentDate || new Date()).toLocaleDateString("it-IT")}</div>
+      <script>setTimeout(()=>{if(location.search.includes('print=1'))window.print()},300)</script>
+    </body></html>`,
+  },
+];
+
+PRIVACY_TEMPLATES.push(...additionalTemplates);
 
 export function getPrivacyTemplate(type: string) {
   return PRIVACY_TEMPLATES.find(t => t.type === type);

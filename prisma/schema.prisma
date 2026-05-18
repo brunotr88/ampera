@@ -1625,6 +1625,7 @@ model PrivacyDocument {
   subjectFiscalCode String?
   customerId   String?
   userId       String?
+  supplierId   String?
   version      String   @default("1.0")
   contentHtml  String?
   signedAt     DateTime?
@@ -1636,6 +1637,10 @@ model PrivacyDocument {
   pdfUrl       String?
   expiresAt    DateTime?
   revokedAt    DateTime?
+  revokedReason String?
+  reminderSentAt DateTime?
+  notes        String?
+  customFieldsJson Json?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -1644,6 +1649,7 @@ model PrivacyDocument {
   @@index([tenantId])
   @@index([customerId])
   @@index([userId])
+  @@index([supplierId])
   @@index([type])
 }
 
