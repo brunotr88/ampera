@@ -3,23 +3,97 @@ import { tr } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/app/page-header";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataTable, type ColumnDef } from "@/components/app/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { BadgeEuro, Plus, ArrowDown, ArrowUp } from "lucide-react";
+import { parseTableParams, ftsMatchingIds, type SortDir } from "@/lib/datatable";
+import type { Prisma } from "@prisma/client";
 
-export default async function CashbookPage() {
+const SORTABLE = ["date", "cashbox", "direction", "category", "amount"];
+const FILTERABLE = ["direction", "category", "cashbox"];
+
+function buildOrderBy(sort: string, dir: SortDir): Prisma.CashbookEntryOrderByWithRelationInput {
+  switch (sort) {
+    case "date": return { date: dir };
+    case "cashbox": return { cashbox: { name: dir } };
+    case "direction": return { direction: dir };
+    case "category": return { category: dir };
+    case "amount": return { amount: dir };
+    default: return { date: "desc" };
+  }
+}
+
+export default async function CashbookPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await requireSession();
-  const [entries, cashboxes] = await Promise.all([
-    db.cashbookEntry.findMany({ where: { tenantId: s.tenantId }, include: { cashbox: true }, orderBy: { date: "desc" }, take: 200 }),
-    db.cashbox.findMany({ where: { tenantId: s.tenantId, active: true } }),
+  const sp = await searchParams;
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+
+  const cashboxes = await db.cashbox.findMany({ where: { tenantId: s.tenantId, active: true } });
+
+  const ids = await ftsMatchingIds("CashbookEntry", s.tenantId, p.q);
+
+  const where: Prisma.CashbookEntryWhereInput = {
+    tenantId: s.tenantId,
+    ...(ids ? { id: { in: ids } } : {}),
+    ...(p.filters.direction ? { direction: p.filters.direction as any } : {}),
+    ...(p.filters.category ? { category: { contains: p.filters.category, mode: "insensitive" } } : {}),
+    ...(p.filters.cashbox ? { cashboxId: p.filters.cashbox } : {}),
+  };
+
+  const [rows, total, sums] = await Promise.all([
+    db.cashbookEntry.findMany({
+      where,
+      include: { cashbox: true },
+      orderBy: buildOrderBy(p.sort, p.dir),
+      skip: (p.page - 1) * p.pageSize,
+      take: p.pageSize,
+    }),
+    db.cashbookEntry.count({ where }),
+    Promise.all([
+      db.cashbookEntry.aggregate({ where: { ...where, direction: "IN" }, _sum: { amount: true } }),
+      db.cashbookEntry.aggregate({ where: { ...where, direction: "OUT" }, _sum: { amount: true } }),
+    ]),
   ]);
 
-  const totalIn = entries.filter(e => e.direction === "IN").reduce((s, e) => s + e.amount, 0);
-  const totalOut = entries.filter(e => e.direction === "OUT").reduce((s, e) => s + e.amount, 0);
+  const totalIn = sums[0]._sum.amount || 0;
+  const totalOut = sums[1]._sum.amount || 0;
+
+  const columns: ColumnDef<typeof rows[number]>[] = [
+    { key: "date", label: "Data", sortable: true, className: "text-xs", render: e => formatDate(e.date) },
+    {
+      key: "cashbox", label: "Cassa", sortable: true,
+      filter: { type: "select", placeholder: "Tutte", options: cashboxes.map(c => ({ value: c.id, label: c.name })) },
+      render: e => e.cashbox.name,
+    },
+    {
+      key: "direction", label: "Direzione", sortable: true,
+      filter: { type: "select", placeholder: "Tutti", options: [
+        { value: "IN", label: "Entrata" },
+        { value: "OUT", label: "Uscita" },
+      ]},
+      render: e => <Badge variant={e.direction === "IN" ? "success" : "warning"}>{e.direction === "IN" ? "Entrata" : "Uscita"}</Badge>,
+    },
+    {
+      key: "description", label: "Descrizione",
+      render: e => <div>{e.description}{e.counterpart && <div className="text-xs text-muted-foreground">{e.counterpart}</div>}</div>,
+    },
+    {
+      key: "category", label: "Categoria", sortable: true,
+      filter: { type: "text", placeholder: "Categoria" },
+      render: e => <Badge variant="muted">{e.category || "—"}</Badge>,
+    },
+    { key: "documentRef", label: "Riferimento", className: "text-xs", render: e => e.documentRef || "—" },
+    {
+      key: "amount", label: "Importo", sortable: true,
+      className: "text-right font-semibold",
+      headerClassName: "text-right",
+      render: e => <span className={e.direction === "IN" ? "text-emerald-600" : "text-amber-600"}>{e.direction === "IN" ? "+" : "-"}{formatCurrency(e.amount)}</span>,
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -47,25 +121,18 @@ export default async function CashbookPage() {
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2 text-amber-600"><ArrowUp className="h-4 w-4" /> Uscite</CardTitle></CardHeader><CardContent><div className="font-display text-2xl font-bold text-amber-600">{formatCurrency(totalOut)}</div></CardContent></Card>
       </div>
 
-      {entries.length === 0 ? (
+      {total === 0 && !p.q && Object.keys(p.filters).length === 0 ? (
         <EmptyState icon={<BadgeEuro className="h-7 w-7" />} title="Nessun movimento" description="Registra entrate e uscite di cassa per avere il polso del cash flow giorno per giorno." cta={<Button asChild><Link href="/admin/cashbook/new">Aggiungi movimento</Link></Button>} />
       ) : (
-        <Table>
-          <TableHeader><TableRow><TableHead>Data</TableHead><TableHead>Cassa</TableHead><TableHead>Direzione</TableHead><TableHead>Descrizione</TableHead><TableHead>Categoria</TableHead><TableHead>Riferimento</TableHead><TableHead className="text-right">Importo</TableHead></TableRow></TableHeader>
-          <TableBody>
-            {entries.map(e => (
-              <TableRow key={e.id}>
-                <TableCell className="text-xs">{formatDate(e.date)}</TableCell>
-                <TableCell>{e.cashbox.name}</TableCell>
-                <TableCell><Badge variant={e.direction === "IN" ? "success" : "warning"}>{e.direction === "IN" ? "Entrata" : "Uscita"}</Badge></TableCell>
-                <TableCell>{e.description}{e.counterpart && <div className="text-xs text-muted-foreground">{e.counterpart}</div>}</TableCell>
-                <TableCell><Badge variant="muted">{e.category || "—"}</Badge></TableCell>
-                <TableCell className="text-xs">{e.documentRef || "—"}</TableCell>
-                <TableCell className={`text-right font-semibold ${e.direction === "IN" ? "text-emerald-600" : "text-amber-600"}`}>{e.direction === "IN" ? "+" : "-"}{formatCurrency(e.amount)}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <DataTable
+          basePath="/admin/cashbook"
+          columns={columns}
+          rows={rows}
+          total={total}
+          rowKey={e => e.id}
+          params={p}
+          searchPlaceholder="Cerca per descrizione, controparte, riferimento…"
+        />
       )}
     </div>
   );

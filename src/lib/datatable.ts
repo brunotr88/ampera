@@ -56,22 +56,36 @@ export function parseTableParams(
 /**
  * Esegue FTS su entità Prisma e ritorna gli ID matching (limitati per safety).
  * Usato come sub-filtro: poi Prisma fa la findMany con id: { in: ... }.
+ *
+ * Se passate `joins`, estende la ricerca anche su entità collegate (customer, plant, etc).
+ * Es: `ftsMatchingIds("Report", tenantId, q, [{ entity: "Customer", fk: "customerId" }])`
+ *  produce: r.id IN (... WHERE r.fts @@ OR c.fts @@)
  */
 export async function ftsMatchingIds(
   entity: EntityName,
   tenantId: string,
   q: string,
+  joins: Array<{ entity: EntityName; fk: string }> = [],
   limit = 5000,
 ): Promise<string[] | null> {
   const tsq = buildTsQuery(q);
   if (!tsq) return null;
 
-  const vector = buildTsVectorExpr(entity);
-  // Query raw con identifier sicuro (entity name controllato da type)
+  const mainVector = buildTsVectorExpr(entity, "main");
+  const joinClauses: string[] = [];
+  const orClauses: string[] = [`${mainVector} @@ to_tsquery('italian', $2)`];
+
+  joins.forEach((j, i) => {
+    const alias = `j${i}`;
+    joinClauses.push(`LEFT JOIN "${j.entity}" ${alias} ON ${alias}.id = main."${j.fk}"`);
+    orClauses.push(`${buildTsVectorExpr(j.entity, alias)} @@ to_tsquery('italian', $2)`);
+  });
+
   const sql = `
-    SELECT id FROM "${entity}"
-    WHERE "tenantId" = $1
-    AND ${vector} @@ to_tsquery('italian', $2)
+    SELECT main.id FROM "${entity}" main
+    ${joinClauses.join("\n")}
+    WHERE main."tenantId" = $1
+    AND (${orClauses.join(" OR ")})
     LIMIT ${Math.min(limit, 10000)}
   `;
   const rows = await db.$queryRawUnsafe<{ id: string }[]>(sql, tenantId, tsq);

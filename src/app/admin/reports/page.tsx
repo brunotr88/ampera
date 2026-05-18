@@ -39,7 +39,10 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
     orderBy: { name: "asc" },
   });
 
-  const ids = await ftsMatchingIds("Report", s.tenantId, p.q);
+  const ids = await ftsMatchingIds("Report", s.tenantId, p.q, [
+    { entity: "Customer", fk: "customerId" },
+    { entity: "Plant", fk: "plantId" },
+  ]);
 
   const where: Prisma.ReportWhereInput = {
     tenantId: s.tenantId,
