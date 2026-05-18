@@ -9,12 +9,13 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ShoppingCart, Plus } from "lucide-react";
-import { parseTableParams, ftsMatchingIds, type SortDir } from "@/lib/datatable";
+import { parseTableParams, ftsMatchingIds, buildDateRangeWhere, type SortDir } from "@/lib/datatable";
 import type { Prisma } from "@prisma/client";
 
 const STATUS_VARIANT: any = { DRAFT: "muted", SENT: "info", CONFIRMED: "info", PARTIAL: "warning", RECEIVED: "success", CANCELLED: "destructive" };
 const SORTABLE = ["number", "supplier", "issueDate", "expectedDate", "total", "status"];
 const FILTERABLE = ["number", "status"];
+const DATE_RANGES = ["issueDate", "expectedDate"];
 
 function buildOrderBy(sort: string, dir: SortDir): Prisma.PurchaseOrderOrderByWithRelationInput {
   switch (sort) {
@@ -31,7 +32,7 @@ function buildOrderBy(sort: string, dir: SortDir): Prisma.PurchaseOrderOrderByWi
 export default async function PurchaseOrdersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await requireSession();
   const sp = await searchParams;
-  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE, DATE_RANGES);
 
   const ids = await ftsMatchingIds("PurchaseOrder", s.tenantId, p.q, [
     { entity: "Supplier", fk: "supplierId" },
@@ -43,6 +44,8 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
     ...(ids ? { id: { in: ids } } : {}),
     ...(p.filters.number ? { number: { contains: p.filters.number, mode: "insensitive" } } : {}),
     ...(p.filters.status ? { status: p.filters.status as any } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.issueDate) ? { issueDate: buildDateRangeWhere(p.dateRanges.issueDate) } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.expectedDate) ? { expectedDate: buildDateRangeWhere(p.dateRanges.expectedDate) } : {}),
   };
 
   const [rows, total] = await Promise.all([
@@ -59,8 +62,8 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
   const columns: ColumnDef<typeof rows[number]>[] = [
     { key: "number", label: "Numero", sortable: true, filter: { type: "text", placeholder: "Num." }, className: "font-mono", render: o => o.number },
     { key: "supplier", label: "Fornitore", sortable: true, render: o => o.supplier.name },
-    { key: "issueDate", label: "Emissione", sortable: true, className: "text-xs", render: o => formatDate(o.issueDate) },
-    { key: "expectedDate", label: "Attesa", sortable: true, className: "text-xs", render: o => o.expectedDate ? formatDate(o.expectedDate) : "—" },
+    { key: "issueDate", label: "Emissione", sortable: true, filter: { type: "daterange" }, className: "text-xs", render: o => formatDate(o.issueDate) },
+    { key: "expectedDate", label: "Attesa", sortable: true, filter: { type: "daterange" }, className: "text-xs", render: o => o.expectedDate ? formatDate(o.expectedDate) : "—" },
     { key: "total", label: "Totale", sortable: true, className: "text-right font-semibold", headerClassName: "text-right", render: o => formatCurrency(o.total) },
     {
       key: "status", label: "Stato", sortable: true,

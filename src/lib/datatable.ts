@@ -15,6 +15,7 @@ export interface DataTableParams {
   page?: number;
   pageSize?: number;
   filters?: Record<string, string>;
+  dateRanges?: Record<string, { from?: string; to?: string }>;
 }
 
 export const DEFAULT_PAGE_SIZE = 25;
@@ -25,7 +26,16 @@ export function parseTableParams(
   searchParams: Record<string, string | string[] | undefined>,
   sortableKeys: string[],
   filterableKeys: string[],
-): Required<Omit<DataTableParams, "filters">> & { filters: Record<string, string> } {
+  dateRangeKeys: string[] = [],
+): {
+  q: string;
+  sort: string;
+  dir: SortDir;
+  page: number;
+  pageSize: number;
+  filters: Record<string, string>;
+  dateRanges: Record<string, { from?: string; to?: string }>;
+} {
   const get = (k: string): string | undefined => {
     const v = searchParams[k];
     return Array.isArray(v) ? v[0] : v;
@@ -50,7 +60,39 @@ export function parseTableParams(
     if (v && v.trim()) filters[key] = v.trim();
   }
 
-  return { q, sort, dir, page, pageSize, filters };
+  const dateRanges: Record<string, { from?: string; to?: string }> = {};
+  for (const key of dateRangeKeys) {
+    const from = get(`f.${key}.from`)?.trim();
+    const to = get(`f.${key}.to`)?.trim();
+    if (from || to) dateRanges[key] = { from: from || undefined, to: to || undefined };
+  }
+
+  return { q, sort, dir, page, pageSize, filters, dateRanges };
+}
+
+/** Converte stringa ISO (YYYY-MM-DD) in Date (start of day local). */
+export function parseDateFrom(s?: string): Date | undefined {
+  if (!s) return undefined;
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? undefined : d;
+}
+
+/** Converte stringa ISO (YYYY-MM-DD) in Date (end of day, 23:59:59.999). */
+export function parseDateTo(s?: string): Date | undefined {
+  if (!s) return undefined;
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return undefined;
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
+/** Helper per costruire WHERE Prisma date range. */
+export function buildDateRangeWhere(range: { from?: string; to?: string } | undefined): { gte?: Date; lte?: Date } | undefined {
+  if (!range) return undefined;
+  const gte = parseDateFrom(range.from);
+  const lte = parseDateTo(range.to);
+  if (!gte && !lte) return undefined;
+  return { ...(gte && { gte }), ...(lte && { lte }) };
 }
 
 /**

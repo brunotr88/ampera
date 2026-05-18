@@ -11,11 +11,12 @@ import { Shield, FileText, Printer, ChevronRight } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { PRIVACY_TEMPLATES } from "@/lib/privacy-templates";
 import { PrivacyDialog } from "./privacy-dialog";
-import { parseTableParams, ftsMatchingIds, type SortDir } from "@/lib/datatable";
+import { parseTableParams, ftsMatchingIds, buildDateRangeWhere, type SortDir } from "@/lib/datatable";
 import type { Prisma } from "@prisma/client";
 
 const SORTABLE = ["type", "subjectName", "subjectEmail", "audience", "createdAt"];
 const FILTERABLE = ["type", "audience"];
+const DATE_RANGES = ["createdAt"];
 
 function buildOrderBy(sort: string, dir: SortDir): Prisma.PrivacyDocumentOrderByWithRelationInput {
   switch (sort) {
@@ -31,7 +32,7 @@ function buildOrderBy(sort: string, dir: SortDir): Prisma.PrivacyDocumentOrderBy
 export default async function PrivacyPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await requireSession();
   const sp = await searchParams;
-  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE, DATE_RANGES);
 
   const ids = await ftsMatchingIds("PrivacyDocument", s.tenantId, p.q);
 
@@ -40,6 +41,7 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
     ...(ids ? { id: { in: ids } } : {}),
     ...(p.filters.type ? { type: p.filters.type as any } : {}),
     ...(p.filters.audience ? { audience: p.filters.audience } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.createdAt) ? { createdAt: buildDateRangeWhere(p.dateRanges.createdAt) } : {}),
   };
 
   const [rows, total] = await Promise.all([
@@ -71,7 +73,7 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
       ]},
       render: d => <Badge variant="muted">{tr(d.audience)}</Badge>,
     },
-    { key: "createdAt", label: "Generato", sortable: true, className: "text-xs", render: d => formatDate(d.createdAt) },
+    { key: "createdAt", label: "Generato", sortable: true, filter: { type: "daterange" }, className: "text-xs", render: d => formatDate(d.createdAt) },
     {
       key: "status", label: "Stato",
       render: d => <Badge variant={d.signedAt ? "success" : d.revokedAt ? "destructive" : "warning"}>{d.signedAt ? "Firmato" : d.revokedAt ? "Revocato" : "Non firmato"}</Badge>,

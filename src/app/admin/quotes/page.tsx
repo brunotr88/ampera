@@ -9,12 +9,13 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { FileText, Plus, Printer } from "lucide-react";
-import { parseTableParams, ftsMatchingIds, type SortDir } from "@/lib/datatable";
+import { parseTableParams, ftsMatchingIds, buildDateRangeWhere, type SortDir } from "@/lib/datatable";
 import type { Prisma } from "@prisma/client";
 
 const STATUS_VARIANT: any = { DRAFT: "muted", SENT: "info", VIEWED: "info", ACCEPTED: "success", REJECTED: "destructive", EXPIRED: "muted", CONVERTED: "success" };
 const SORTABLE = ["number", "title", "customer", "createdAt", "validUntil", "total", "status"];
-const FILTERABLE = ["number", "status"];
+const FILTERABLE = ["number", "status", "customer"];
+const DATE_RANGES = ["createdAt", "validUntil"];
 
 function buildOrderBy(sort: string, dir: SortDir): Prisma.QuoteOrderByWithRelationInput {
   switch (sort) {
@@ -32,11 +33,15 @@ function buildOrderBy(sort: string, dir: SortDir): Prisma.QuoteOrderByWithRelati
 export default async function QuotesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await requireSession();
   const sp = await searchParams;
-  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE, DATE_RANGES);
 
-  const ids = await ftsMatchingIds("Quote", s.tenantId, p.q, [
-    { entity: "Customer", fk: "customerId" },
-  ]);
+  const customers = await db.customer.findMany({
+    where: { tenantId: s.tenantId, deletedAt: null },
+    select: { id: true, name: true, companyName: true },
+    orderBy: { name: "asc" },
+  });
+
+  const ids = await ftsMatchingIds("Quote", s.tenantId, p.q, [{ entity: "Customer", fk: "customerId" }]);
 
   const where: Prisma.QuoteWhereInput = {
     tenantId: s.tenantId,
@@ -44,15 +49,16 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
     ...(ids ? { id: { in: ids } } : {}),
     ...(p.filters.number ? { number: { contains: p.filters.number, mode: "insensitive" } } : {}),
     ...(p.filters.status ? { status: p.filters.status as any } : {}),
+    ...(p.filters.customer ? { customerId: p.filters.customer } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.createdAt) ? { createdAt: buildDateRangeWhere(p.dateRanges.createdAt) } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.validUntil) ? { validUntil: buildDateRangeWhere(p.dateRanges.validUntil) } : {}),
   };
 
   const [rows, total] = await Promise.all([
     db.quote.findMany({
-      where,
-      include: { customer: true },
+      where, include: { customer: true },
       orderBy: buildOrderBy(p.sort, p.dir),
-      skip: (p.page - 1) * p.pageSize,
-      take: p.pageSize,
+      skip: (p.page - 1) * p.pageSize, take: p.pageSize,
     }),
     db.quote.count({ where }),
   ]);
@@ -62,21 +68,18 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
     { key: "title", label: "Titolo", sortable: true, render: q => q.title },
     {
       key: "customer", label: "Cliente", sortable: true,
+      filter: { type: "select", placeholder: "Tutti", options: customers.map(c => ({ value: c.id, label: c.companyName || c.name })) },
       render: q => <Link href={`/admin/customers/${q.customerId}`} className="hover:underline">{q.customer.companyName || q.customer.name}</Link>,
     },
-    { key: "createdAt", label: "Data", sortable: true, className: "text-xs", render: q => formatDate(q.createdAt) },
-    { key: "validUntil", label: "Validità", sortable: true, className: "text-xs", render: q => q.validUntil ? formatDate(q.validUntil) : "—" },
+    { key: "createdAt", label: "Data", sortable: true, filter: { type: "daterange" }, className: "text-xs", render: q => formatDate(q.createdAt) },
+    { key: "validUntil", label: "Validità", sortable: true, filter: { type: "daterange" }, className: "text-xs", render: q => q.validUntil ? formatDate(q.validUntil) : "—" },
     { key: "total", label: "Totale", sortable: true, className: "text-right font-semibold", headerClassName: "text-right", render: q => formatCurrency(q.total) },
     {
       key: "status", label: "Stato", sortable: true,
       filter: { type: "select", placeholder: "Tutti", options: [
-        { value: "DRAFT", label: "Bozza" },
-        { value: "SENT", label: "Inviato" },
-        { value: "VIEWED", label: "Visto" },
-        { value: "ACCEPTED", label: "Accettato" },
-        { value: "REJECTED", label: "Rifiutato" },
-        { value: "EXPIRED", label: "Scaduto" },
-        { value: "CONVERTED", label: "Convertito" },
+        { value: "DRAFT", label: "Bozza" }, { value: "SENT", label: "Inviato" }, { value: "VIEWED", label: "Visto" },
+        { value: "ACCEPTED", label: "Accettato" }, { value: "REJECTED", label: "Rifiutato" },
+        { value: "EXPIRED", label: "Scaduto" }, { value: "CONVERTED", label: "Convertito" },
       ]},
       render: q => <Badge variant={STATUS_VARIANT[q.status]}>{tr(q.status)}</Badge>,
     },
@@ -94,19 +97,10 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
   return (
     <div className="space-y-4">
       <PageHeader title="Preventivi" description={`${total} preventivi nel pipeline`} actions={<Button asChild><Link href="/admin/quotes/new"><Plus className="h-4 w-4" /> Nuovo preventivo</Link></Button>} />
-
-      {total === 0 && !p.q && Object.keys(p.filters).length === 0 ? (
+      {total === 0 && !p.q && Object.keys(p.filters).length === 0 && Object.keys(p.dateRanges).length === 0 ? (
         <EmptyState icon={<FileText className="h-7 w-7" />} title="Nessun preventivo" description="Crea preventivi professionali, invia al cliente per firma digitale, converti in fattura." cta={<Button asChild><Link href="/admin/quotes/new">Nuovo preventivo</Link></Button>} />
       ) : (
-        <DataTable
-          basePath="/admin/quotes"
-          columns={columns}
-          rows={rows}
-          total={total}
-          rowKey={q => q.id}
-          params={p}
-          searchPlaceholder="Cerca numero, titolo, descrizione, cliente…"
-        />
+        <DataTable basePath="/admin/quotes" columns={columns} rows={rows} total={total} rowKey={q => q.id} params={p} searchPlaceholder="Cerca numero, titolo, descrizione, cliente…" />
       )}
     </div>
   );

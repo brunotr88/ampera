@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatDate, daysUntil } from "@/lib/utils";
 import { Zap, Plus } from "lucide-react";
-import { parseTableParams, ftsMatchingIds, type SortDir } from "@/lib/datatable";
+import { parseTableParams, ftsMatchingIds, buildDateRangeWhere, type SortDir } from "@/lib/datatable";
 import type { Prisma } from "@prisma/client";
 
 const SORTABLE = ["name", "customer", "type", "ratedPowerKw", "installDate", "nextCheckDate"];
-const FILTERABLE = ["name", "type"];
+const FILTERABLE = ["name", "type", "customer"];
+const DATE_RANGES = ["installDate", "nextCheckDate"];
 
 function buildOrderBy(sort: string, dir: SortDir): Prisma.PlantOrderByWithRelationInput {
   switch (sort) {
@@ -30,11 +31,15 @@ function buildOrderBy(sort: string, dir: SortDir): Prisma.PlantOrderByWithRelati
 export default async function PlantsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await requireSession();
   const sp = await searchParams;
-  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE, DATE_RANGES);
 
-  const ids = await ftsMatchingIds("Plant", s.tenantId, p.q, [
-    { entity: "Customer", fk: "customerId" },
-  ]);
+  const customers = await db.customer.findMany({
+    where: { tenantId: s.tenantId, deletedAt: null },
+    select: { id: true, name: true, companyName: true },
+    orderBy: { name: "asc" },
+  });
+
+  const ids = await ftsMatchingIds("Plant", s.tenantId, p.q, [{ entity: "Customer", fk: "customerId" }]);
 
   const where: Prisma.PlantWhereInput = {
     tenantId: s.tenantId,
@@ -42,15 +47,16 @@ export default async function PlantsPage({ searchParams }: { searchParams: Promi
     ...(ids ? { id: { in: ids } } : {}),
     ...(p.filters.name ? { name: { contains: p.filters.name, mode: "insensitive" } } : {}),
     ...(p.filters.type ? { type: p.filters.type as any } : {}),
+    ...(p.filters.customer ? { customerId: p.filters.customer } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.installDate) ? { installDate: buildDateRangeWhere(p.dateRanges.installDate) } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.nextCheckDate) ? { nextCheckDate: buildDateRangeWhere(p.dateRanges.nextCheckDate) } : {}),
   };
 
   const [rows, total] = await Promise.all([
     db.plant.findMany({
-      where,
-      include: { customer: true, site: true },
+      where, include: { customer: true, site: true },
       orderBy: buildOrderBy(p.sort, p.dir),
-      skip: (p.page - 1) * p.pageSize,
-      take: p.pageSize,
+      skip: (p.page - 1) * p.pageSize, take: p.pageSize,
     }),
     db.plant.count({ where }),
   ]);
@@ -67,27 +73,24 @@ export default async function PlantsPage({ searchParams }: { searchParams: Promi
     },
     {
       key: "customer", label: "Cliente", sortable: true,
+      filter: { type: "select", placeholder: "Tutti", options: customers.map(c => ({ value: c.id, label: c.companyName || c.name })) },
       render: r => <Link href={`/admin/customers/${r.customerId}`} className="hover:underline">{r.customer.companyName || `${r.customer.name} ${r.customer.surname || ""}`.trim()}</Link>,
     },
     {
       key: "type", label: "Tipo", sortable: true,
       filter: { type: "select", placeholder: "Tutti", options: [
-        { value: "CIVIL", label: "Civile" },
-        { value: "INDUSTRIAL", label: "Industriale" },
-        { value: "PHOTOVOLTAIC", label: "Fotovoltaico" },
-        { value: "DOMOTIC", label: "Domotica" },
-        { value: "EMERGENCY", label: "Emergenza" },
-        { value: "TLC", label: "TLC" },
-        { value: "FIRE_ALARM", label: "Antincendio" },
-        { value: "HVAC", label: "HVAC" },
+        { value: "CIVIL", label: "Civile" }, { value: "INDUSTRIAL", label: "Industriale" },
+        { value: "PHOTOVOLTAIC", label: "Fotovoltaico" }, { value: "DOMOTIC", label: "Domotica" },
+        { value: "EMERGENCY", label: "Emergenza" }, { value: "TLC", label: "TLC" },
+        { value: "FIRE_ALARM", label: "Antincendio" }, { value: "HVAC", label: "HVAC" },
         { value: "CHARGING_STATION", label: "Ricarica EV" },
       ]},
       render: r => <Badge variant="outline">{tr(r.type)}</Badge>,
     },
     { key: "ratedPowerKw", label: "Potenza", sortable: true, className: "text-right", headerClassName: "text-right", render: r => r.ratedPowerKw ? `${r.ratedPowerKw} kW` : "—" },
-    { key: "installDate", label: "Installato", sortable: true, className: "text-xs", render: r => r.installDate ? formatDate(r.installDate) : "—" },
+    { key: "installDate", label: "Installato", sortable: true, filter: { type: "daterange" }, className: "text-xs", render: r => r.installDate ? formatDate(r.installDate) : "—" },
     {
-      key: "nextCheckDate", label: "Verifica", sortable: true,
+      key: "nextCheckDate", label: "Verifica", sortable: true, filter: { type: "daterange" },
       render: r => {
         if (!r.nextCheckDate) return "—";
         const d = daysUntil(r.nextCheckDate);
@@ -102,19 +105,10 @@ export default async function PlantsPage({ searchParams }: { searchParams: Promi
       <PageHeader title="Impianti" description={`${total} impianti gestiti`} actions={
         <Button asChild><Link href="/admin/plants/new"><Plus className="h-4 w-4" /> Nuovo impianto</Link></Button>
       } />
-
-      {total === 0 && !p.q && Object.keys(p.filters).length === 0 ? (
+      {total === 0 && !p.q && Object.keys(p.filters).length === 0 && Object.keys(p.dateRanges).length === 0 ? (
         <EmptyState icon={<Zap className="h-7 w-7" />} title="Nessun impianto" description="Gli impianti sono entità di prima classe: avrai storico interventi, DICO e scadenze DPR 462 per ognuno." cta={<Button asChild><Link href="/admin/plants/new"><Plus className="h-4 w-4" /> Aggiungi impianto</Link></Button>} />
       ) : (
-        <DataTable
-          basePath="/admin/plants"
-          columns={columns}
-          rows={rows}
-          total={total}
-          rowKey={r => r.id}
-          params={p}
-          searchPlaceholder="Cerca per nome impianto, codice, cliente, tipo…"
-        />
+        <DataTable basePath="/admin/plants" columns={columns} rows={rows} total={total} rowKey={r => r.id} params={p} searchPlaceholder="Cerca per nome impianto, codice, cliente, tipo…" />
       )}
     </div>
   );

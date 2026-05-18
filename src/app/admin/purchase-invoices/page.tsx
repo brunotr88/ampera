@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Receipt, Plus } from "lucide-react";
-import { parseTableParams, ftsMatchingIds, type SortDir } from "@/lib/datatable";
+import { parseTableParams, ftsMatchingIds, buildDateRangeWhere, type SortDir } from "@/lib/datatable";
 import type { Prisma } from "@prisma/client";
 
 const SORTABLE = ["number", "issueDate", "dueDate", "total", "paymentStatus"];
 const FILTERABLE = ["number", "paymentStatus"];
+const DATE_RANGES = ["issueDate", "dueDate"];
 
 function buildOrderBy(sort: string, dir: SortDir): Prisma.PurchaseInvoiceOrderByWithRelationInput {
   switch (sort) {
@@ -29,7 +30,7 @@ function buildOrderBy(sort: string, dir: SortDir): Prisma.PurchaseInvoiceOrderBy
 export default async function PurchaseInvoicesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await requireSession();
   const sp = await searchParams;
-  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE, DATE_RANGES);
 
   const ids = await ftsMatchingIds("PurchaseInvoice", s.tenantId, p.q, [
     { entity: "Supplier", fk: "supplierId" },
@@ -40,6 +41,8 @@ export default async function PurchaseInvoicesPage({ searchParams }: { searchPar
     ...(ids ? { id: { in: ids } } : {}),
     ...(p.filters.number ? { number: { contains: p.filters.number, mode: "insensitive" } } : {}),
     ...(p.filters.paymentStatus ? { paymentStatus: p.filters.paymentStatus as any } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.issueDate) ? { issueDate: buildDateRangeWhere(p.dateRanges.issueDate) } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.dueDate) ? { dueDate: buildDateRangeWhere(p.dateRanges.dueDate) } : {}),
   };
 
   const [rows, total, totals, unpaid] = await Promise.all([
@@ -67,8 +70,8 @@ export default async function PurchaseInvoicesPage({ searchParams }: { searchPar
   const columns: ColumnDef<typeof rows[number]>[] = [
     { key: "number", label: "Numero", sortable: true, filter: { type: "text", placeholder: "Num." }, className: "font-mono", render: i => `${i.number}${i.series ? `/${i.series}` : ""}` },
     { key: "supplier", label: "Fornitore", render: i => supplierMap.get(i.supplierId) || "—" },
-    { key: "issueDate", label: "Data", sortable: true, className: "text-xs", render: i => formatDate(i.issueDate) },
-    { key: "dueDate", label: "Scadenza", sortable: true, className: "text-xs", render: i => i.dueDate ? formatDate(i.dueDate) : "—" },
+    { key: "issueDate", label: "Data", sortable: true, filter: { type: "daterange" }, className: "text-xs", render: i => formatDate(i.issueDate) },
+    { key: "dueDate", label: "Scadenza", sortable: true, filter: { type: "daterange" }, className: "text-xs", render: i => i.dueDate ? formatDate(i.dueDate) : "—" },
     { key: "subtotal", label: "Imp.", className: "text-right", headerClassName: "text-right", render: i => formatCurrency(i.subtotal) },
     { key: "vatTotal", label: "IVA", className: "text-right", headerClassName: "text-right", render: i => formatCurrency(i.vatTotal) },
     { key: "total", label: "Totale", sortable: true, className: "text-right font-semibold", headerClassName: "text-right", render: i => formatCurrency(i.total) },

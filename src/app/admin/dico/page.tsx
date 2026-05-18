@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatDate } from "@/lib/utils";
 import { FileCheck, Plus } from "lucide-react";
-import { parseTableParams, ftsMatchingIds, type SortDir } from "@/lib/datatable";
+import { parseTableParams, ftsMatchingIds, buildDateRangeWhere, type SortDir } from "@/lib/datatable";
 import type { Prisma } from "@prisma/client";
 
 const SORTABLE = ["number", "plant", "rtName", "issueDate", "status"];
 const FILTERABLE = ["number", "status"];
+const DATE_RANGES = ["issueDate"];
 
 function buildOrderBy(sort: string, dir: SortDir): Prisma.ConformityDeclarationOrderByWithRelationInput {
   switch (sort) {
@@ -29,7 +30,7 @@ function buildOrderBy(sort: string, dir: SortDir): Prisma.ConformityDeclarationO
 export default async function DicoPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await requireSession();
   const sp = await searchParams;
-  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE, DATE_RANGES);
 
   const ids = await ftsMatchingIds("ConformityDeclaration", s.tenantId, p.q, [
     { entity: "Plant", fk: "plantId" },
@@ -40,6 +41,7 @@ export default async function DicoPage({ searchParams }: { searchParams: Promise
     ...(ids ? { id: { in: ids } } : {}),
     ...(p.filters.number ? { number: { contains: p.filters.number, mode: "insensitive" } } : {}),
     ...(p.filters.status ? { status: p.filters.status as any } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.issueDate) ? { issueDate: buildDateRangeWhere(p.dateRanges.issueDate) } : {}),
   };
 
   const [rows, total] = await Promise.all([
@@ -64,7 +66,7 @@ export default async function DicoPage({ searchParams }: { searchParams: Promise
       render: d => <Link href={`/admin/plants/${d.plantId}`} className="hover:underline">{d.plant.name}</Link>,
     },
     { key: "rtName", label: "RT", sortable: true, className: "text-xs", render: d => d.rtName || "—" },
-    { key: "issueDate", label: "Data emissione", sortable: true, className: "text-xs", render: d => d.issueDate ? formatDate(d.issueDate) : "—" },
+    { key: "issueDate", label: "Data emissione", sortable: true, filter: { type: "daterange" }, className: "text-xs", render: d => d.issueDate ? formatDate(d.issueDate) : "—" },
     {
       key: "status", label: "Stato", sortable: true,
       filter: { type: "select", placeholder: "Tutti", options: [

@@ -9,11 +9,12 @@ import { DataTable, type ColumnDef } from "@/components/app/data-table";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { tr } from "@/lib/labels";
 import { Building2, Plus } from "lucide-react";
-import { parseTableParams, ftsMatchingIds, type SortDir } from "@/lib/datatable";
+import { parseTableParams, ftsMatchingIds, buildDateRangeWhere, type SortDir } from "@/lib/datatable";
 import type { Prisma } from "@prisma/client";
 
 const SORTABLE = ["code", "name", "category", "acquisitionDate", "purchasePrice", "amortizationYears", "status"];
 const FILTERABLE = ["code", "category", "status"];
+const DATE_RANGES = ["acquisitionDate"];
 
 function buildOrderBy(sort: string, dir: SortDir): Prisma.AssetAcquisitionOrderByWithRelationInput {
   switch (sort) {
@@ -31,7 +32,7 @@ function buildOrderBy(sort: string, dir: SortDir): Prisma.AssetAcquisitionOrderB
 export default async function AssetsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await requireSession();
   const sp = await searchParams;
-  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE, DATE_RANGES);
 
   const ids = await ftsMatchingIds("AssetAcquisition", s.tenantId, p.q);
 
@@ -41,6 +42,7 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
     ...(p.filters.code ? { code: { contains: p.filters.code, mode: "insensitive" } } : {}),
     ...(p.filters.category ? { category: { contains: p.filters.category, mode: "insensitive" } } : {}),
     ...(p.filters.status ? { status: p.filters.status as any } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.acquisitionDate) ? { acquisitionDate: buildDateRangeWhere(p.dateRanges.acquisitionDate) } : {}),
   };
 
   const [rows, total, kpi] = await Promise.all([
@@ -64,7 +66,7 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
       render: a => <div><div className="font-medium">{a.name}</div>{a.serialNumber && <div className="text-xs text-muted-foreground">S/N {a.serialNumber}</div>}</div>,
     },
     { key: "category", label: "Categoria", sortable: true, filter: { type: "text", placeholder: "Categoria" }, render: a => a.category || "—" },
-    { key: "acquisitionDate", label: "Data acq.", sortable: true, className: "text-xs", render: a => formatDate(a.acquisitionDate) },
+    { key: "acquisitionDate", label: "Data acq.", sortable: true, filter: { type: "daterange" }, className: "text-xs", render: a => formatDate(a.acquisitionDate) },
     { key: "purchasePrice", label: "Prezzo", sortable: true, className: "text-right font-semibold", headerClassName: "text-right", render: a => formatCurrency(a.purchasePrice) },
     { key: "amortizationYears", label: "Ammort.", sortable: true, className: "text-xs", render: a => `${a.amortizationYears}y` },
     {

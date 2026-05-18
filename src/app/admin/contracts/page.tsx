@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatCurrency, formatDate, daysUntil } from "@/lib/utils";
 import { Truck, Plus } from "lucide-react";
-import { parseTableParams, ftsMatchingIds, type SortDir } from "@/lib/datatable";
+import { parseTableParams, ftsMatchingIds, buildDateRangeWhere, type SortDir } from "@/lib/datatable";
 import type { Prisma } from "@prisma/client";
 
 const SORTABLE = ["name", "customer", "plant", "nextDueDate", "feeMonthly", "active"];
-const FILTERABLE = ["active"];
+const FILTERABLE = ["active", "customer"];
+const DATE_RANGES = ["nextDueDate"];
 
 function buildOrderBy(sort: string, dir: SortDir): Prisma.MaintenanceContractOrderByWithRelationInput {
   switch (sort) {
@@ -29,7 +30,13 @@ function buildOrderBy(sort: string, dir: SortDir): Prisma.MaintenanceContractOrd
 export default async function ContractsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await requireSession();
   const sp = await searchParams;
-  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE, DATE_RANGES);
+
+  const customers = await db.customer.findMany({
+    where: { tenantId: s.tenantId, deletedAt: null },
+    select: { id: true, name: true, companyName: true },
+    orderBy: { name: "asc" },
+  });
 
   const ids = await ftsMatchingIds("MaintenanceContract", s.tenantId, p.q, [
     { entity: "Customer", fk: "customerId" },
@@ -40,15 +47,15 @@ export default async function ContractsPage({ searchParams }: { searchParams: Pr
     tenantId: s.tenantId,
     ...(ids ? { id: { in: ids } } : {}),
     ...(p.filters.active === "1" ? { active: true } : p.filters.active === "0" ? { active: false } : {}),
+    ...(p.filters.customer ? { customerId: p.filters.customer } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.nextDueDate) ? { nextDueDate: buildDateRangeWhere(p.dateRanges.nextDueDate) } : {}),
   };
 
   const [rows, total] = await Promise.all([
     db.maintenanceContract.findMany({
-      where,
-      include: { customer: true, plant: true },
+      where, include: { customer: true, plant: true },
       orderBy: buildOrderBy(p.sort, p.dir),
-      skip: (p.page - 1) * p.pageSize,
-      take: p.pageSize,
+      skip: (p.page - 1) * p.pageSize, take: p.pageSize,
     }),
     db.maintenanceContract.count({ where }),
   ]);
@@ -57,6 +64,7 @@ export default async function ContractsPage({ searchParams }: { searchParams: Pr
     { key: "name", label: "Contratto", sortable: true, className: "font-medium", render: c => c.name },
     {
       key: "customer", label: "Cliente", sortable: true,
+      filter: { type: "select", placeholder: "Tutti", options: customers.map(c => ({ value: c.id, label: c.companyName || c.name })) },
       render: c => <Link href={`/admin/customers/${c.customerId}`} className="hover:underline">{c.customer.companyName || c.customer.name}</Link>,
     },
     {
@@ -64,7 +72,7 @@ export default async function ContractsPage({ searchParams }: { searchParams: Pr
       render: c => c.plant ? <Link href={`/admin/plants/${c.plantId}`} className="hover:underline">{c.plant.name}</Link> : "—",
     },
     {
-      key: "nextDueDate", label: "Prossima scadenza", sortable: true,
+      key: "nextDueDate", label: "Prossima scadenza", sortable: true, filter: { type: "daterange" },
       render: c => {
         const d = daysUntil(c.nextDueDate);
         return <Badge variant={d !== null && d <= 30 ? "warning" : "muted"}>{formatDate(c.nextDueDate)}</Badge>;
@@ -74,8 +82,7 @@ export default async function ContractsPage({ searchParams }: { searchParams: Pr
     {
       key: "active", label: "Stato", sortable: true,
       filter: { type: "select", placeholder: "Tutti", options: [
-        { value: "1", label: "Attivo" },
-        { value: "0", label: "Sospeso" },
+        { value: "1", label: "Attivo" }, { value: "0", label: "Sospeso" },
       ]},
       render: c => <Badge variant={c.active ? "success" : "muted"}>{c.active ? "Attivo" : "Sospeso"}</Badge>,
     },
@@ -84,19 +91,10 @@ export default async function ContractsPage({ searchParams }: { searchParams: Pr
   return (
     <div className="space-y-4">
       <PageHeader title="Contratti manutenzione" description={`${total} contratti ricorrenti`} actions={<Button asChild><Link href="/admin/contracts/new"><Plus className="h-4 w-4" /> Nuovo</Link></Button>} />
-
-      {total === 0 && !p.q && Object.keys(p.filters).length === 0 ? (
+      {total === 0 && !p.q && Object.keys(p.filters).length === 0 && Object.keys(p.dateRanges).length === 0 ? (
         <EmptyState icon={<Truck className="h-7 w-7" />} title="Nessun contratto" description="Genera ricavi ricorrenti: contratti di manutenzione con scadenze automatiche e fatturazione." />
       ) : (
-        <DataTable
-          basePath="/admin/contracts"
-          columns={columns}
-          rows={rows}
-          total={total}
-          rowKey={c => c.id}
-          params={p}
-          searchPlaceholder="Cerca per nome contratto, cliente, impianto…"
-        />
+        <DataTable basePath="/admin/contracts" columns={columns} rows={rows} total={total} rowKey={c => c.id} params={p} searchPlaceholder="Cerca per nome contratto, cliente, impianto…" />
       )}
     </div>
   );

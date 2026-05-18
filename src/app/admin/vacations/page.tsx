@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { tr } from "@/lib/labels";
 import { requireSession } from "@/lib/permissions";
 import { db } from "@/lib/db";
@@ -7,12 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { Sun } from "lucide-react";
 import { NewVacationDialog, VacationRowActions } from "./vacation-actions";
-import { parseTableParams, type SortDir } from "@/lib/datatable";
+import { parseTableParams, buildDateRangeWhere, type SortDir } from "@/lib/datatable";
 import type { Prisma } from "@prisma/client";
 
 const TYPE_LABEL: Record<string, string> = { VACATION: "Ferie", PERMIT: "Permesso", ILLNESS: "Malattia", TRAINING: "Formazione", LEAVE_104: "L. 104", PARENTAL: "Genitoriale", OTHER: "Altro" };
 const SORTABLE = ["user", "type", "startDate", "endDate", "status"];
 const FILTERABLE = ["user", "type", "status"];
+const DATE_RANGES = ["startDate"];
 
 function buildOrderBy(sort: string, dir: SortDir): Prisma.VacationRequestOrderByWithRelationInput {
   switch (sort) {
@@ -28,7 +30,7 @@ function buildOrderBy(sort: string, dir: SortDir): Prisma.VacationRequestOrderBy
 export default async function VacationsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await requireSession();
   const sp = await searchParams;
-  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE, DATE_RANGES);
 
   const users = await db.user.findMany({
     where: { tenantId: s.tenantId, active: true },
@@ -48,6 +50,7 @@ export default async function VacationsPage({ searchParams }: { searchParams: Pr
     ...(p.filters.user ? { userId: p.filters.user } : {}),
     ...(p.filters.type ? { type: p.filters.type as any } : {}),
     ...(p.filters.status ? { status: p.filters.status as any } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.startDate) ? { startDate: buildDateRangeWhere(p.dateRanges.startDate) } : {}),
   };
 
   const [rows, total] = await Promise.all([
@@ -65,14 +68,14 @@ export default async function VacationsPage({ searchParams }: { searchParams: Pr
     {
       key: "user", label: "Utente", sortable: true,
       filter: { type: "select", placeholder: "Tutti", options: users.map(u => ({ value: u.id, label: u.name })) },
-      render: v => v.user.name,
+      render: v => <Link href={`/admin/users/${v.userId}`} className="hover:underline">{v.user.name}</Link>,
     },
     {
       key: "type", label: "Tipo", sortable: true,
       filter: { type: "select", placeholder: "Tutti", options: Object.entries(TYPE_LABEL).map(([k, v]) => ({ value: k, label: v })) },
       render: v => <Badge variant="outline">{TYPE_LABEL[v.type]}</Badge>,
     },
-    { key: "period", label: "Periodo", render: v => `${formatDate(v.startDate)} → ${formatDate(v.endDate)}` },
+    { key: "startDate", label: "Periodo", sortable: true, filter: { type: "daterange" }, render: v => `${formatDate(v.startDate)} → ${formatDate(v.endDate)}` },
     {
       key: "status", label: "Stato", sortable: true,
       filter: { type: "select", placeholder: "Tutti", options: [

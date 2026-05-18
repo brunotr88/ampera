@@ -10,7 +10,8 @@ export type FilterOption = { value: string; label: string };
 
 export type ColumnFilter =
   | { type: "text"; placeholder?: string }
-  | { type: "select"; options: FilterOption[]; placeholder?: string };
+  | { type: "select"; options: FilterOption[]; placeholder?: string }
+  | { type: "daterange" };
 
 export interface ColumnDef<T> {
   key: string;
@@ -36,6 +37,7 @@ interface DataTableProps<T> {
     page: number;
     pageSize: number;
     filters: Record<string, string>;
+    dateRanges?: Record<string, { from?: string; to?: string }>;
   };
   searchPlaceholder?: string;
   emptyState?: React.ReactNode;
@@ -50,6 +52,12 @@ function urlState(p: DataTableProps<any>["params"]) {
   if (p.page > 1) cur.page = p.page;
   if (p.pageSize !== 25) cur.pageSize = p.pageSize;
   for (const [k, v] of Object.entries(p.filters)) cur[`f.${k}`] = v;
+  if (p.dateRanges) {
+    for (const [k, r] of Object.entries(p.dateRanges)) {
+      if (r.from) cur[`f.${k}.from`] = r.from;
+      if (r.to) cur[`f.${k}.to`] = r.to;
+    }
+  }
   return cur;
 }
 
@@ -118,6 +126,7 @@ export function DataTable<T>({
                         columnKey={col.key}
                         filter={col.filter}
                         initial={params.filters[col.key] || ""}
+                        initialDateRange={params.dateRanges?.[col.key]}
                       />
                     ) : null}
                   </TableHead>

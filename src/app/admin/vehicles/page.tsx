@@ -10,11 +10,12 @@ import { DataTable, type ColumnDef } from "@/components/app/data-table";
 import { formatDate, daysUntil } from "@/lib/utils";
 import { tr } from "@/lib/labels";
 import { Truck, Plus, ShieldCheck, Wrench, Calendar } from "lucide-react";
-import { parseTableParams, ftsMatchingIds, type SortDir } from "@/lib/datatable";
+import { parseTableParams, ftsMatchingIds, buildDateRangeWhere, type SortDir } from "@/lib/datatable";
 import type { Prisma } from "@prisma/client";
 
 const SORTABLE = ["plate", "model", "type", "assignedTo", "currentKm", "insuranceExpiry", "inspectionExpiry", "maintenanceExpiry"];
 const FILTERABLE = ["plate", "type", "assignedTo"];
+const DATE_RANGES = ["insuranceExpiry", "inspectionExpiry", "maintenanceExpiry"];
 
 function buildOrderBy(sort: string, dir: SortDir): Prisma.VehicleOrderByWithRelationInput {
   switch (sort) {
@@ -33,7 +34,7 @@ function buildOrderBy(sort: string, dir: SortDir): Prisma.VehicleOrderByWithRela
 export default async function VehiclesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await requireSession();
   const sp = await searchParams;
-  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE, DATE_RANGES);
 
   const technicians = await db.user.findMany({
     where: { tenantId: s.tenantId, active: true },
@@ -50,6 +51,9 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
     ...(p.filters.plate ? { plate: { contains: p.filters.plate, mode: "insensitive" } } : {}),
     ...(p.filters.type ? { type: p.filters.type as any } : {}),
     ...(p.filters.assignedTo ? { assignedToId: p.filters.assignedTo } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.insuranceExpiry) ? { insuranceExpiry: buildDateRangeWhere(p.dateRanges.insuranceExpiry) } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.inspectionExpiry) ? { inspectionExpiry: buildDateRangeWhere(p.dateRanges.inspectionExpiry) } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.maintenanceExpiry) ? { maintenanceExpiry: buildDateRangeWhere(p.dateRanges.maintenanceExpiry) } : {}),
   };
 
   // KPI from full set (not paginated)
@@ -99,11 +103,11 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
     {
       key: "assignedTo", label: "Assegnato", sortable: true,
       filter: { type: "select", placeholder: "Tutti", options: technicians.map(t => ({ value: t.id, label: t.name })) },
-      render: v => v.assignedTo?.name || <span className="text-muted-foreground italic">—</span>,
+      render: v => v.assignedTo ? <Link href={`/admin/users/${v.assignedToId}`} className="hover:underline">{v.assignedTo.name}</Link> : <span className="text-muted-foreground italic">—</span>,
     },
     { key: "currentKm", label: "Km", sortable: true, className: "text-right font-mono text-sm", headerClassName: "text-right", render: v => v.currentKm.toLocaleString("it-IT") },
     {
-      key: "insuranceExpiry", label: "Assicur.", sortable: true, className: "text-xs",
+      key: "insuranceExpiry", label: "Assicur.", sortable: true, filter: { type: "daterange" }, className: "text-xs",
       render: v => {
         if (!v.insuranceExpiry) return <span className="text-muted-foreground">—</span>;
         const d = daysUntil(v.insuranceExpiry)!;
@@ -111,7 +115,7 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
       },
     },
     {
-      key: "inspectionExpiry", label: "Revisione", sortable: true, className: "text-xs",
+      key: "inspectionExpiry", label: "Revisione", sortable: true, filter: { type: "daterange" }, className: "text-xs",
       render: v => {
         if (!v.inspectionExpiry) return <span className="text-muted-foreground">—</span>;
         const d = daysUntil(v.inspectionExpiry)!;
@@ -119,7 +123,7 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
       },
     },
     {
-      key: "maintenanceExpiry", label: "Tagliando", sortable: true, className: "text-xs",
+      key: "maintenanceExpiry", label: "Tagliando", sortable: true, filter: { type: "daterange" }, className: "text-xs",
       render: v => {
         if (!v.maintenanceExpiry) return <span className="text-muted-foreground">—</span>;
         const d = daysUntil(v.maintenanceExpiry)!;

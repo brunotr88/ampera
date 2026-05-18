@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Building2, Plus } from "lucide-react";
-import { parseTableParams, ftsMatchingIds, type SortDir } from "@/lib/datatable";
+import { parseTableParams, ftsMatchingIds, buildDateRangeWhere, type SortDir } from "@/lib/datatable";
 import type { Prisma } from "@prisma/client";
 
 const SORTABLE = ["code", "name", "customer", "startDate", "status"];
-const FILTERABLE = ["code", "status"];
+const FILTERABLE = ["code", "status", "customer"];
+const DATE_RANGES = ["startDate"];
 
 function buildOrderBy(sort: string, dir: SortDir): Prisma.ProjectOrderByWithRelationInput {
   switch (sort) {
@@ -29,11 +30,15 @@ function buildOrderBy(sort: string, dir: SortDir): Prisma.ProjectOrderByWithRela
 export default async function ProjectsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await requireSession();
   const sp = await searchParams;
-  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE, DATE_RANGES);
 
-  const ids = await ftsMatchingIds("Project", s.tenantId, p.q, [
-    { entity: "Customer", fk: "customerId" },
-  ]);
+  const customers = await db.customer.findMany({
+    where: { tenantId: s.tenantId, deletedAt: null },
+    select: { id: true, name: true, companyName: true },
+    orderBy: { name: "asc" },
+  });
+
+  const ids = await ftsMatchingIds("Project", s.tenantId, p.q, [{ entity: "Customer", fk: "customerId" }]);
 
   const where: Prisma.ProjectWhereInput = {
     tenantId: s.tenantId,
@@ -41,15 +46,15 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     ...(ids ? { id: { in: ids } } : {}),
     ...(p.filters.code ? { code: { contains: p.filters.code, mode: "insensitive" } } : {}),
     ...(p.filters.status ? { status: p.filters.status as any } : {}),
+    ...(p.filters.customer ? { customerId: p.filters.customer } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.startDate) ? { startDate: buildDateRangeWhere(p.dateRanges.startDate) } : {}),
   };
 
   const [rows, total] = await Promise.all([
     db.project.findMany({
-      where,
-      include: { customer: true },
+      where, include: { customer: true },
       orderBy: buildOrderBy(p.sort, p.dir),
-      skip: (p.page - 1) * p.pageSize,
-      take: p.pageSize,
+      skip: (p.page - 1) * p.pageSize, take: p.pageSize,
     }),
     db.project.count({ where }),
   ]);
@@ -59,18 +64,16 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     { key: "name", label: "Nome", sortable: true, render: r => <Link href={`/admin/projects/${r.id}`} className="font-medium hover:underline">{r.name}</Link> },
     {
       key: "customer", label: "Cliente", sortable: true,
+      filter: { type: "select", placeholder: "Tutti", options: customers.map(c => ({ value: c.id, label: c.companyName || c.name })) },
       render: r => <Link href={`/admin/customers/${r.customerId}`} className="hover:underline">{r.customer.companyName || r.customer.name}</Link>,
     },
-    { key: "startDate", label: "Inizio", sortable: true, className: "text-xs", render: r => r.startDate ? formatDate(r.startDate) : "—" },
+    { key: "startDate", label: "Inizio", sortable: true, filter: { type: "daterange" }, className: "text-xs", render: r => r.startDate ? formatDate(r.startDate) : "—" },
     { key: "budget", label: "Budget", className: "text-right", headerClassName: "text-right", render: r => formatCurrency(r.budgetMaterials + r.budgetLabor + r.budgetIndirect) },
     {
       key: "status", label: "Stato", sortable: true,
       filter: { type: "select", placeholder: "Tutti", options: [
-        { value: "DRAFT", label: "Bozza" },
-        { value: "ACTIVE", label: "Attiva" },
-        { value: "ON_HOLD", label: "In pausa" },
-        { value: "CLOSED", label: "Chiusa" },
-        { value: "CANCELLED", label: "Annullata" },
+        { value: "DRAFT", label: "Bozza" }, { value: "ACTIVE", label: "Attiva" },
+        { value: "ON_HOLD", label: "In pausa" }, { value: "CLOSED", label: "Chiusa" }, { value: "CANCELLED", label: "Annullata" },
       ]},
       render: r => <Badge variant={r.status === "ACTIVE" ? "success" : r.status === "CLOSED" ? "muted" : "warning"}>{tr(r.status)}</Badge>,
     },
@@ -79,19 +82,10 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
   return (
     <div className="space-y-4">
       <PageHeader title="Commesse" description={`${total} commesse`} actions={<Button asChild><Link href="/admin/projects/new"><Plus className="h-4 w-4" /> Nuova commessa</Link></Button>} />
-
-      {total === 0 && !p.q && Object.keys(p.filters).length === 0 ? (
+      {total === 0 && !p.q && Object.keys(p.filters).length === 0 && Object.keys(p.dateRanges).length === 0 ? (
         <EmptyState icon={<Building2 className="h-7 w-7" />} title="Nessuna commessa" description="Organizza il lavoro per cantiere, traccia budget vs consuntivo, calcola marginalità." cta={<Button asChild><Link href="/admin/projects/new">Nuova commessa</Link></Button>} />
       ) : (
-        <DataTable
-          basePath="/admin/projects"
-          columns={columns}
-          rows={rows}
-          total={total}
-          rowKey={r => r.id}
-          params={p}
-          searchPlaceholder="Cerca per codice, nome, CIG, CUP, cliente…"
-        />
+        <DataTable basePath="/admin/projects" columns={columns} rows={rows} total={total} rowKey={r => r.id} params={p} searchPlaceholder="Cerca per codice, nome, CIG, CUP, cliente…" />
       )}
     </div>
   );

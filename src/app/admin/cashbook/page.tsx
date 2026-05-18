@@ -10,11 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { BadgeEuro, Plus, ArrowDown, ArrowUp } from "lucide-react";
-import { parseTableParams, ftsMatchingIds, type SortDir } from "@/lib/datatable";
+import { parseTableParams, ftsMatchingIds, buildDateRangeWhere, type SortDir } from "@/lib/datatable";
 import type { Prisma } from "@prisma/client";
 
 const SORTABLE = ["date", "cashbox", "direction", "category", "amount"];
 const FILTERABLE = ["direction", "category", "cashbox"];
+const DATE_RANGES = ["date"];
 
 function buildOrderBy(sort: string, dir: SortDir): Prisma.CashbookEntryOrderByWithRelationInput {
   switch (sort) {
@@ -30,7 +31,7 @@ function buildOrderBy(sort: string, dir: SortDir): Prisma.CashbookEntryOrderByWi
 export default async function CashbookPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const s = await requireSession();
   const sp = await searchParams;
-  const p = parseTableParams(sp, SORTABLE, FILTERABLE);
+  const p = parseTableParams(sp, SORTABLE, FILTERABLE, DATE_RANGES);
 
   const cashboxes = await db.cashbox.findMany({ where: { tenantId: s.tenantId, active: true } });
 
@@ -42,6 +43,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
     ...(p.filters.direction ? { direction: p.filters.direction as any } : {}),
     ...(p.filters.category ? { category: { contains: p.filters.category, mode: "insensitive" } } : {}),
     ...(p.filters.cashbox ? { cashboxId: p.filters.cashbox } : {}),
+    ...(buildDateRangeWhere(p.dateRanges.date) ? { date: buildDateRangeWhere(p.dateRanges.date) } : {}),
   };
 
   const [rows, total, sums] = await Promise.all([
@@ -63,7 +65,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
   const totalOut = sums[1]._sum.amount || 0;
 
   const columns: ColumnDef<typeof rows[number]>[] = [
-    { key: "date", label: "Data", sortable: true, className: "text-xs", render: e => formatDate(e.date) },
+    { key: "date", label: "Data", sortable: true, filter: { type: "daterange" }, className: "text-xs", render: e => formatDate(e.date) },
     {
       key: "cashbox", label: "Cassa", sortable: true,
       filter: { type: "select", placeholder: "Tutte", options: cashboxes.map(c => ({ value: c.id, label: c.name })) },
