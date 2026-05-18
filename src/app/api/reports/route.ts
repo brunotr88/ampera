@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
         startLat: data.startLat, startLon: data.startLon,
         endLat: data.endLat, endLon: data.endLon,
         contactPerson: data.contactPerson,
+        contactId: data.contactId,
         signerName: data.signerName,
         signedAt: data.signedAt || (data.signatureDataUrl && data.finalize ? new Date() : null),
         status: data.finalize ? "SUBMITTED" : "DRAFT",

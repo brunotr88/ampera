@@ -68,6 +68,7 @@ export const ReportCreate = z.object({
   endLat: z.coerce.number().optional().nullable(),
   endLon: z.coerce.number().optional().nullable(),
   contactPerson: z.string().max(120).optional().nullable(),
+  contactId: z.string().optional().nullable(),
   signatureDataUrl: z.string().optional().nullable(),
   signerName: z.string().max(120).optional().nullable(),
   signedAt: z.coerce.date().optional().nullable(),
@@ -223,6 +224,7 @@ export const WorkOrderCreate = z.object({
   estimatedMinutes: z.coerce.number().int().optional().nullable(),
   type: z.string().optional().nullable(),
   contactPerson: z.string().optional().nullable(),
+  contactId: z.string().optional().nullable(),
 });
 
 export const MaterialCreate = z.object({

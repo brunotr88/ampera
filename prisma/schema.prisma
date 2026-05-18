@@ -1789,6 +1789,7 @@ model AssetAcquisition {
   location        String?
   supplierId      String?
   invoiceRef      String?
+  purchaseInvoiceId String?
   notes           String?
   disposalDate    DateTime?
   disposalValue   Float?

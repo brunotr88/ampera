@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Save, X, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { ContactSelect } from "@/components/app/contact-select";
 
 export function ReportEditForm({ report }: { report: any }) {
   const router = useRouter();
@@ -19,6 +20,7 @@ export function ReportEditForm({ report }: { report: any }) {
     totalHours: report.totalHours || 0,
     travelKm: report.travelKm || 0,
     contactPerson: report.contactPerson || "",
+    contactId: report.contactId || null,
     signerName: report.signerName || "",
     totalLaborAmount: report.totalLaborAmount || 0,
     totalMaterialAmount: report.totalMaterialAmount || 0,
@@ -53,7 +55,16 @@ export function ReportEditForm({ report }: { report: any }) {
           <div><Label>Km trasferta</Label><Input type="number" value={form.travelKm} onChange={e => setForm({ ...form, travelKm: Number(e.target.value) })} /></div>
           <div><Label>Manodopera €</Label><Input type="number" step="0.01" value={form.totalLaborAmount} onChange={e => setForm({ ...form, totalLaborAmount: Number(e.target.value) })} /></div>
           <div><Label>Materiali €</Label><Input type="number" step="0.01" value={form.totalMaterialAmount} onChange={e => setForm({ ...form, totalMaterialAmount: Number(e.target.value) })} /></div>
-          <div><Label>Referente</Label><Input value={form.contactPerson} onChange={e => setForm({ ...form, contactPerson: e.target.value })} /></div>
+          <div>
+            <Label>Referente in loco</Label>
+            <ContactSelect
+              customerId={report.customerId}
+              plantId={report.plantId || undefined}
+              contactId={form.contactId}
+              contactPerson={form.contactPerson}
+              onChange={({ contactId, contactPerson }) => setForm({ ...form, contactId, contactPerson: contactPerson || "" })}
+            />
+          </div>
           <div><Label>Nome firmatario</Label><Input value={form.signerName} onChange={e => setForm({ ...form, signerName: e.target.value })} /></div>
         </div>
         <label className="flex items-center gap-2 text-sm pt-2 border-t">

@@ -5,15 +5,38 @@ import { auditLog } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const s = await requireSession();
+  const sp = req.nextUrl.searchParams;
+  const q = sp.get("q")?.trim();
+  const supplierId = sp.get("supplierId") || undefined;
+
+  // Se q presente cerca anche per nome fornitore via supplier filter
+  let supplierIdsFromQuery: string[] | undefined;
+  if (q) {
+    const matching = await db.supplier.findMany({
+      where: { tenantId: s.tenantId, name: { contains: q, mode: "insensitive" } },
+      select: { id: true },
+    });
+    supplierIdsFromQuery = matching.map(m => m.id);
+  }
+
   const invoices = await db.purchaseInvoice.findMany({
-    where: { tenantId: s.tenantId, deletedAt: null },
+    where: {
+      tenantId: s.tenantId, deletedAt: null,
+      ...(supplierId ? { supplierId } : {}),
+      ...(q ? {
+        OR: [
+          { number: { contains: q, mode: "insensitive" } },
+          { series: { contains: q, mode: "insensitive" } },
+          ...(supplierIdsFromQuery && supplierIdsFromQuery.length ? [{ supplierId: { in: supplierIdsFromQuery } }] : []),
+        ],
+      } : {}),
+    },
     include: { lines: true, _count: { select: { lines: true } } },
     orderBy: { issueDate: "desc" },
     take: 200,
   });
-  // Join supplier
   const supplierIds = [...new Set(invoices.map(i => i.supplierId))];
   const suppliers = await db.supplier.findMany({ where: { id: { in: supplierIds } }, select: { id: true, name: true } });
   const supMap = new Map(suppliers.map(s => [s.id, s.name]));

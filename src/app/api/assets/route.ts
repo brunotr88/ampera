@@ -32,7 +32,8 @@ export async function POST(req: NextRequest) {
       amortizationStartDate: body.amortizationStartDate ? new Date(body.amortizationStartDate) : null,
       residualValue: Number(body.residualValue || 0),
       location: body.location, supplierId: body.supplierId,
-      invoiceRef: body.invoiceRef, notes: body.notes,
+      invoiceRef: body.invoiceRef, purchaseInvoiceId: body.purchaseInvoiceId || null,
+      notes: body.notes,
     },
   });
   await auditLog({ tenantId: s.tenantId, userId: s.id, action: "CREATE", entity: "AssetAcquisition", entityId: asset.id });

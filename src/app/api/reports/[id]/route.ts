@@ -26,7 +26,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (r.immutable && !body.forceUnlock) return NextResponse.json({ error: "Rapportino firmato, immutable. Crea un rapportino integrativo o nota credito." }, { status: 423 });
 
   const data: any = {};
-  for (const k of ["description", "recommendations", "workType", "cause", "totalHours", "travelKm", "contactPerson", "signerName", "totalLaborAmount", "totalMaterialAmount"]) {
+  for (const k of ["description", "recommendations", "workType", "cause", "totalHours", "travelKm", "contactPerson", "contactId", "signerName", "totalLaborAmount", "totalMaterialAmount"]) {
     if (k in body) data[k] = body[k];
   }
   if (body.totalLaborAmount !== undefined || body.totalMaterialAmount !== undefined) {

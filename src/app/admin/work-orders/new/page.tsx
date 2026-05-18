@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { ContactSelect } from "@/components/app/contact-select";
 
 function NewWOForm() {
   const router = useRouter();
@@ -84,7 +85,16 @@ function NewWOForm() {
           <div><Label>Data programmata</Label><Input type="datetime-local" value={form.scheduledDate || ""} onChange={e => setForm({ ...form, scheduledDate: e.target.value })} /></div>
           <div><Label>Fine prevista</Label><Input type="datetime-local" value={form.scheduledEndDate || ""} onChange={e => setForm({ ...form, scheduledEndDate: e.target.value })} /></div>
           <div><Label>Tipo</Label><Input value={form.type || ""} onChange={e => setForm({ ...form, type: e.target.value })} placeholder="Manutenzione / Guasto / Installazione" /></div>
-          <div><Label>Referente in loco</Label><Input value={form.contactPerson || ""} onChange={e => setForm({ ...form, contactPerson: e.target.value })} /></div>
+          <div>
+            <Label>Referente in loco</Label>
+            <ContactSelect
+              customerId={form.customerId || undefined}
+              plantId={form.plantId || undefined}
+              contactId={form.contactId}
+              contactPerson={form.contactPerson}
+              onChange={({ contactId, contactPerson }) => setForm({ ...form, contactId, contactPerson })}
+            />
+          </div>
           <div className="md:col-span-2"><Label>Descrizione</Label><Textarea rows={3} value={form.description || ""} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
         </div>
       </CardContent></Card>

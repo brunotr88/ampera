@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { SignaturePadComponent } from "@/components/app/signature-pad";
+import { ContactSelect } from "@/components/app/contact-select";
 import { toast } from "sonner";
 
 type Material = { materialId?: string; code?: string; description: string; quantity: number; unit: string; unitPrice: number; warehouseId?: string };
@@ -37,7 +38,7 @@ export default function ReportWizard({ params }: { params: Promise<{ id: string 
 
   const [form, setForm] = useState<any>({
     workType: "", cause: "", description: "", recommendations: "",
-    totalHours: 0.5, travelKm: 0, contactPerson: "", signerName: "",
+    totalHours: 0.5, travelKm: 0, contactPerson: "", contactId: null as string | null, signerName: "",
   });
   const [materials, setMaterials] = useState<Material[]>([]);
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -56,7 +57,7 @@ export default function ReportWizard({ params }: { params: Promise<{ id: string 
     fetch(`/api/work-orders?mine=1`).then(r => r.json()).then(d => {
       const x = d.workOrders?.find((w: any) => w.id === id);
       setWo(x);
-      if (x?.contactPerson) setForm((f: any) => ({ ...f, contactPerson: x.contactPerson }));
+      if (x?.contactPerson) setForm((f: any) => ({ ...f, contactPerson: x.contactPerson, contactId: x.contactId || null }));
     });
     fetch("/api/warehouses").then(r => r.json()).then(d => setWarehouses(d.warehouses || []));
     fetch("/api/users").then(r => r.json()).then(d => setTenantUsers(d.users || []));
@@ -159,6 +160,7 @@ export default function ReportWizard({ params }: { params: Promise<{ id: string 
       travelKm: Number(form.travelKm),
       endLat, endLon,
       contactPerson: form.contactPerson,
+      contactId: form.contactId,
       signerName: form.signerName,
       signedAt: new Date(),
       signatureDataUrl: signature,
@@ -208,7 +210,16 @@ export default function ReportWizard({ params }: { params: Promise<{ id: string 
             {wo.site && <div className="text-sm text-slate-600 flex items-center gap-1"><MapPin className="h-3 w-3" /> {wo.site.street}, {wo.site.city}</div>}
             {wo.plant && <div className="text-sm text-slate-600">Impianto: <strong>{wo.plant.name}</strong></div>}
           </div>
-          <div><Label>Referente in cantiere</Label><Input value={form.contactPerson} onChange={e => setForm({ ...form, contactPerson: e.target.value })} placeholder="Es. Sig. Rossi (proprietario)" /></div>
+          <div>
+            <Label>Referente in cantiere</Label>
+            <ContactSelect
+              customerId={wo.customerId}
+              plantId={wo.plantId || undefined}
+              contactId={form.contactId}
+              contactPerson={form.contactPerson}
+              onChange={({ contactId, contactPerson }) => setForm({ ...form, contactId, contactPerson: contactPerson || "" })}
+            />
+          </div>
           <Button size="lg" onClick={() => setStep(2)} className="w-full bg-ampera-700 mt-4">Continua <ChevronRight className="h-4 w-4" /></Button>
         </section>
       )}

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { PurchaseInvoicePicker } from "@/components/app/purchase-invoice-picker";
 
 const CATEGORIES = ["Macchinari", "Attrezzature", "Hardware/Informatica", "Mobili", "Veicoli", "Software", "Altro"];
 
@@ -62,7 +63,21 @@ function NewAssetForm() {
             {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </Select>
         </div>
-        <div><Label>Riferimento fattura</Label><Input value={form.invoiceRef} onChange={e => setForm({ ...form, invoiceRef: e.target.value })} placeholder="Es. F. acquisto 0125 del 15/05/2026" /></div>
+        <div className="md:col-span-2">
+          <Label>Fattura acquisto associata</Label>
+          <PurchaseInvoicePicker
+            value={form.purchaseInvoiceId}
+            supplierId={form.supplierId}
+            onChange={({ purchaseInvoiceId, invoiceRef, supplierId }) => setForm({
+              ...form,
+              purchaseInvoiceId: purchaseInvoiceId,
+              invoiceRef: invoiceRef ?? form.invoiceRef,
+              supplierId: supplierId ?? form.supplierId,
+            })}
+          />
+          <p className="text-xs text-muted-foreground mt-1">Seleziona la fattura registrata per pre-compilare riferimento e fornitore.</p>
+        </div>
+        <div><Label>Riferimento fattura (manuale)</Label><Input value={form.invoiceRef || ""} onChange={e => setForm({ ...form, invoiceRef: e.target.value })} placeholder="Es. F. acquisto 0125 del 15/05/2026" /></div>
         <div className="md:col-span-2"><Label>Ubicazione</Label><Input value={form.location || ""} onChange={e => setForm({ ...form, location: e.target.value })} placeholder="Es. Magazzino sede / Furgone Marco" /></div>
         <div className="md:col-span-2"><Label>Descrizione</Label><Textarea rows={2} value={form.description || ""} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
       </CardContent></Card>

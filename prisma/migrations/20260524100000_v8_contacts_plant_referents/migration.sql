@@ -18,3 +18,7 @@ ALTER TABLE "Contact"
 -- contactId opzionale su Report e WorkOrder per dropdown referente in loco
 ALTER TABLE "Report" ADD COLUMN IF NOT EXISTS "contactId" TEXT;
 ALTER TABLE "WorkOrder" ADD COLUMN IF NOT EXISTS "contactId" TEXT;
+
+-- Asset: link a PurchaseInvoice (opzionale, per ricerca/selezione fattura associata)
+ALTER TABLE "AssetAcquisition" ADD COLUMN IF NOT EXISTS "purchaseInvoiceId" TEXT;
+CREATE INDEX IF NOT EXISTS "AssetAcquisition_purchaseInvoiceId_idx" ON "AssetAcquisition"("purchaseInvoiceId");
