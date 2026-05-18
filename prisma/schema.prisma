@@ -232,7 +232,8 @@ enum CustomerStatus {
 
 model Contact {
   id          String   @id @default(cuid())
-  customerId  String
+  customerId  String?
+  plantId     String?
   name        String
   surname     String?
   role        String?
@@ -244,9 +245,11 @@ model Contact {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  plant       Plant?    @relation(fields: [plantId], references: [id], onDelete: Cascade)
 
   @@index([customerId])
+  @@index([plantId])
 }
 
 model Address {
@@ -335,6 +338,7 @@ model Plant {
   dicos             ConformityDeclaration[]
   periodicChecks    PeriodicCheck[]
   contracts         MaintenanceContract[]
+  contacts          Contact[]
 
   @@index([tenantId])
   @@index([customerId])
@@ -557,6 +561,7 @@ model WorkOrder {
   cause             String?
   notes             String?
   contactPerson     String?
+  contactId         String?
   cancelReason      String?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -631,6 +636,7 @@ model Report {
   totalMaterialAmount Float       @default(0)
   totalAmount       Float         @default(0)
   invoiceId         String?
+  contactId         String?
   syncedFromOfflineAt DateTime?
   clientId          String?
   cancelledAt       DateTime?

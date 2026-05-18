@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Attachments } from "@/components/app/attachments";
+import { ContactsManager } from "@/components/app/contacts-manager";
 import { formatDate } from "@/lib/utils";
 import { HELP } from "@/lib/page-help-data";
 import { FileCheck, Wrench, ClipboardList } from "lucide-react";
@@ -91,6 +92,8 @@ export default async function PlantDetailPage({ params }: { params: Promise<{ id
           )}
         </CardContent>
       </Card>
+
+      <ContactsManager plantId={plant.id} title="Referenti in loco dell'impianto" />
 
       <Attachments entityType="Plant" entityId={plant.id} title="Documenti tecnici (schemi, planimetrie, foto, DICO)" accept=".pdf,image/*,.dwg,.dxf" />
     </div>
