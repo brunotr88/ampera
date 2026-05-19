@@ -30,6 +30,7 @@ const nav = [
   { href: "/admin/calendar", label: "Calendario", icon: Calendar },
   { href: "/admin/vacations", label: "Ferie & Permessi", icon: Sun },
   { href: "/admin/incentives", label: "Agevolazioni", icon: Award },
+  { href: "/admin/prezzario", label: "Prezzario DEI", icon: BookOpen },
   { href: "/admin/privacy", label: "Privacy & GDPR", icon: Shield },
   { href: "/admin/faq", label: "FAQ & Guide", icon: BookOpen },
   { href: "/admin/reports/kpi", label: "Report KPI", icon: BarChart3 },

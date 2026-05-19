@@ -109,6 +109,7 @@ export const QuoteCreate = z.object({
   internalNotes: z.string().optional().nullable(),
   lines: z.array(z.object({
     materialId: z.string().nullable().optional(),
+    priceListEntryId: z.string().nullable().optional(),
     code: z.string().optional().nullable(),
     description: z.string().min(1),
     quantity: z.coerce.number().min(0),
@@ -119,6 +120,7 @@ export const QuoteCreate = z.object({
     vatRate: z.coerce.number().min(0).max(50).default(22),
     vatExemptionCode: z.string().optional().nullable(),
     vatNote: z.string().optional().nullable(),
+    lineNote: z.string().optional().nullable(),
   })).min(1),
 });
 

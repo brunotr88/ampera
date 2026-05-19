@@ -81,6 +81,8 @@ model Tenant {
   vehicles     Vehicle[]
   assetAcquisitions AssetAcquisition[]
   purchaseInvoices PurchaseInvoice[]
+  priceLists   PriceList[]
+  priceListEntries PriceListEntry[]
 }
 
 enum Plan {
@@ -500,6 +502,7 @@ model QuoteLine {
   position     Int
   type         String   @default("ITEM")
   materialId   String?
+  priceListEntryId String?
   code         String?
   description  String
   lineNote     String?
@@ -516,8 +519,71 @@ model QuoteLine {
 
   quote        Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
   material     Material? @relation(fields: [materialId], references: [id])
+  priceListEntry PriceListEntry? @relation(fields: [priceListEntryId], references: [id])
 
   @@index([quoteId])
+  @@index([priceListEntryId])
+}
+
+// =====================================================================
+// PREZZARI (DEI, REGIONALE, INTERNO)
+// =====================================================================
+
+model PriceList {
+  id            String   @id @default(cuid())
+  tenantId      String
+  name          String
+  source        String   @default("DEI")
+  year          Int
+  active        Boolean  @default(true)
+  isDefault     Boolean  @default(false)
+  description   String?
+  importedAt    DateTime?
+  importSourceFile String?
+  totalEntries  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  entries       PriceListEntry[]
+
+  @@unique([tenantId, name, year])
+  @@index([tenantId])
+  @@index([source])
+}
+
+model PriceListEntry {
+  id              String   @id @default(cuid())
+  priceListId     String
+  tenantId        String
+  code            String
+  chapter         String?
+  category        String?
+  subCategory     String?
+  description     String
+  shortDescription String?
+  unit            String   @default("pz")
+  unitPrice       Float    @default(0)
+  materialCost    Float?
+  laborCost       Float?
+  laborHours      Float?
+  laborRate       Float?
+  equipmentCost   Float?
+  notes           String?
+  active          Boolean  @default(true)
+  position        Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  priceList       PriceList @relation(fields: [priceListId], references: [id], onDelete: Cascade)
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  quoteLines      QuoteLine[]
+
+  @@unique([priceListId, code])
+  @@index([priceListId])
+  @@index([code])
+  @@index([chapter])
+  @@index([tenantId])
 }
 
 model QuoteTemplate {

@@ -24,7 +24,8 @@ export type EntityName =
   | "IncentiveApplication"
   | "PrivacyDocument"
   | "ConformityDeclaration"
-  | "AssetAcquisition";
+  | "AssetAcquisition"
+  | "PriceListEntry";
 
 export const SEARCH_FIELDS: Record<EntityName, string[]> = {
   Customer: ["name", "surname", "companyName", "vatNumber", "fiscalCode", "email", "phone", "mobile", "sdiCode", "pec", "notes"],
@@ -45,6 +46,7 @@ export const SEARCH_FIELDS: Record<EntityName, string[]> = {
   PrivacyDocument: ["audience", "subjectName", "subjectEmail", "subjectFiscalCode", "signerName"],
   ConformityDeclaration: ["number", "rtName", "rtRegistrationNo", "notes"],
   AssetAcquisition: ["code", "name", "description", "category", "serialNumber", "location", "invoiceRef", "notes"],
+  PriceListEntry: ["code", "description", "shortDescription", "chapter", "category", "subCategory", "notes"],
 };
 
 /** Quote identifier Postgres (camelCase) o lowercase senza virgolette */

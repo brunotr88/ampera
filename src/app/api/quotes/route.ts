@@ -49,7 +49,9 @@ export async function POST(req: NextRequest) {
       subtotal: final.subtotal, vatTotal: final.vatTotal, total: final.total,
       terms: data.terms, internalNotes: data.internalNotes,
       lines: { create: data.lines.map((l, i) => ({
-        position: i + 1, materialId: l.materialId, code: l.code, description: l.description,
+        position: i + 1, materialId: l.materialId,
+        priceListEntryId: (l as any).priceListEntryId || null,
+        code: l.code, description: l.description,
         quantity: l.quantity, unit: l.unit, unitPrice: l.unitPrice,
         discountPercent: l.discountPercent, discountAmount: l.discountAmount || 0,
         vatRate: l.vatRate, vatExemptionCode: l.vatExemptionCode, vatNote: l.vatNote,

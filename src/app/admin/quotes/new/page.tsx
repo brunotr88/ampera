@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Save, Loader2, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
+import { PriceListPicker } from "@/components/app/price-list-picker";
 
-type Line = { description: string; quantity: number; unit: string; unitPrice: number; discountPercent: number; discountAmount: number; vatRate: number; code?: string; vatNote?: string };
+type Line = { description: string; quantity: number; unit: string; unitPrice: number; discountPercent: number; discountAmount: number; vatRate: number; code?: string; vatNote?: string; priceListEntryId?: string | null };
 
 const VAT_OPTIONS = [
   { rate: 22, label: "22% standard" },
@@ -85,11 +86,27 @@ function NewQuoteForm() {
           <div>
             <div className="flex justify-between items-center mb-2">
               <Label className="m-0">Righe preventivo</Label>
-              <Button type="button" size="sm" variant="outline" onClick={() => setLines([...lines, { description: "", quantity: 1, unit: "pz", unitPrice: 0, discountPercent: 0, discountAmount: 0, vatRate: form.defaultVatRate }])}><Plus className="h-3 w-3" /> Aggiungi</Button>
+              <div className="flex gap-2">
+                <PriceListPicker
+                  onPick={(e) => setLines([...lines, {
+                    description: e.description, code: e.code, priceListEntryId: e.id,
+                    quantity: 1, unit: e.unit, unitPrice: e.unitPrice,
+                    discountPercent: 0, discountAmount: 0, vatRate: form.defaultVatRate,
+                  }])}
+                  buttonLabel="Aggiungi da prezzario"
+                />
+                <Button type="button" size="sm" variant="outline" onClick={() => setLines([...lines, { description: "", quantity: 1, unit: "pz", unitPrice: 0, discountPercent: 0, discountAmount: 0, vatRate: form.defaultVatRate }])}><Plus className="h-3 w-3" /> Manuale</Button>
+              </div>
             </div>
             <div className="space-y-3">
               {lines.map((l, i) => (
                 <div key={i} className="p-3 bg-muted/30 rounded-lg space-y-2">
+                  {l.code && (
+                    <div className="text-[10px] text-muted-foreground font-mono">
+                      📖 Prezzario: <span className="font-semibold">{l.code}</span>
+                      {l.priceListEntryId && <button type="button" className="ml-2 text-amber-600 hover:underline" onClick={() => updateLine(i, { priceListEntryId: null, code: undefined } as any)}>scollega</button>}
+                    </div>
+                  )}
                   <div className="grid grid-cols-12 gap-2 items-start">
                     <Input className="col-span-12 md:col-span-6" placeholder="Descrizione" value={l.description} onChange={e => updateLine(i, { description: e.target.value })} required />
                     <Input className="col-span-3 md:col-span-1" type="number" step="0.01" placeholder="Qta" value={l.quantity} onChange={e => updateLine(i, { quantity: Number(e.target.value) })} />
