@@ -40,8 +40,14 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
           <Card>
             <CardHeader><CardTitle>Contenuto documento</CardTitle></CardHeader>
             <CardContent>
-              <div className="rounded-lg bg-muted/40 p-4 max-h-[600px] overflow-y-auto">
-                <div className="bg-white text-slate-900 shadow-lg rounded-sm mx-auto max-w-[210mm] p-8 [&_*]:!text-slate-900" dangerouslySetInnerHTML={{ __html: doc.contentHtml }} />
+              <div className="rounded-lg bg-muted/40 p-4">
+                <iframe
+                  srcDoc={doc.contentHtml}
+                  className="w-full bg-white rounded-sm shadow-lg border-0"
+                  style={{ height: "600px" }}
+                  sandbox=""
+                  title="Anteprima documento"
+                />
               </div>
             </CardContent>
           </Card>

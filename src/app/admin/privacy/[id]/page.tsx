@@ -172,8 +172,14 @@ export default function PrivacyDocDetail({ params }: { params: Promise<{ id: str
       <Card>
         <CardHeader><CardTitle>Anteprima documento</CardTitle></CardHeader>
         <CardContent>
-          <div className="border rounded-lg p-4 max-h-[60vh] overflow-y-auto bg-white text-black">
-            <div dangerouslySetInnerHTML={{ __html: (doc.contentHtml || "").replace(/<script[^>]*>.*?<\/script>/gs, "") }} />
+          <div className="rounded-lg bg-muted/40 p-4 max-h-[60vh] overflow-y-auto">
+            <iframe
+              srcDoc={(doc.contentHtml || "").replace(/<script[^>]*>.*?<\/script>/gs, "")}
+              className="w-full bg-white rounded-sm shadow-lg border-0"
+              style={{ height: "55vh" }}
+              sandbox=""
+              title="Anteprima documento"
+            />
           </div>
           {doc.signatureDataUrl && (
             <div className="mt-4 p-3 border rounded-lg bg-white">
