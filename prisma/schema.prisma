@@ -83,6 +83,8 @@ model Tenant {
   purchaseInvoices PurchaseInvoice[]
   priceLists   PriceList[]
   priceListEntries PriceListEntry[]
+  ampDocs      AmperaDocument[]
+  ampDocTemplates DocumentTemplate[]
 }
 
 enum Plan {
@@ -1964,4 +1966,95 @@ enum PurchaseLineType {
   ASSET
   EXPENSE
   CONSUMABLE
+}
+
+// =====================================================================
+// DOCUMENTAZIONE COMPLETA (verbali, attestati, dichiarazioni)
+// =====================================================================
+
+model DocumentTemplate {
+  id            String   @id @default(cuid())
+  tenantId      String?
+  code          String
+  title         String
+  category      String
+  description   String?
+  bodyTemplate  String
+  requireSignature Boolean @default(true)
+  signerRole    String   @default("CUSTOMER")
+  legalReference String?
+  audience      String   @default("CUSTOMER")
+  active        Boolean  @default(true)
+  isSystem      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  documents     AmperaDocument[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([category])
+}
+
+model AmperaDocument {
+  id            String   @id @default(cuid())
+  tenantId      String
+  templateId    String?
+  code          String
+  title         String
+  category      String
+
+  customerId    String?
+  plantId       String?
+  workOrderId   String?
+  reportId      String?
+  projectId     String?
+
+  contentHtml   String
+  status        String   @default("DRAFT")
+  generatedAt   DateTime?
+  pdfUrl        String?
+
+  sentAt        DateTime?
+  sentTo        String?
+  sentById      String?
+
+  signedAt      DateTime?
+  signedByName  String?
+  signedByEmail String?
+  signerRole    String?
+  signatureType String?
+  signatureDataUrl String?
+  signatureMeta String?
+  signatureFileUrl String?
+
+  otpHash       String?
+  otpSentAt     DateTime?
+  otpAttempts   Int      @default(0)
+  otpExpiresAt  DateTime?
+
+  shareToken    String?  @unique
+  shareExpiresAt DateTime?
+
+  revokedAt     DateTime?
+  revokedReason String?
+
+  customFieldsJson String?
+  createdById   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  template      DocumentTemplate? @relation(fields: [templateId], references: [id])
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([plantId])
+  @@index([workOrderId])
+  @@index([status])
+  @@index([category])
+  @@index([shareToken])
 }

@@ -10,7 +10,7 @@ export const authConfig = {
       const role = (auth?.user as any)?.role;
       const { pathname } = nextUrl;
       // Public
-      if (pathname.startsWith("/api/auth") || pathname.startsWith("/api/health") || pathname === "/login" || pathname.startsWith("/_next") || pathname === "/" || pathname.startsWith("/q/") || pathname.startsWith("/share/")) {
+      if (pathname.startsWith("/api/auth") || pathname.startsWith("/api/health") || pathname === "/login" || pathname.startsWith("/_next") || pathname === "/" || pathname.startsWith("/q/") || pathname.startsWith("/share/") || pathname.startsWith("/sign/") || pathname.startsWith("/api/public/")) {
         return true;
       }
       // Cron endpoints have their own Bearer auth

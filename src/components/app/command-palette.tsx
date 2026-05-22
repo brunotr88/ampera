@@ -20,6 +20,7 @@ const STATIC_NAV: Item[] = [
   { id: "mat", title: "Articoli", href: "/admin/materials", icon: BookMarked, group: "Naviga" },
   { id: "inc", title: "Agevolazioni", href: "/admin/incentives", icon: Award, group: "Naviga" },
   { id: "prezz", title: "Prezzario DEI", href: "/admin/prezzario", icon: BookOpen, group: "Naviga" },
+  { id: "docs", title: "Documentazione", href: "/admin/documenti", icon: Shield, group: "Naviga" },
   { id: "priv", title: "Privacy & GDPR", href: "/admin/privacy", icon: Shield, group: "Naviga" },
   { id: "faq", title: "FAQ", href: "/admin/faq", icon: BookOpen, group: "Naviga" },
   { id: "set", title: "Impostazioni", href: "/admin/settings", icon: Settings, group: "Naviga" },

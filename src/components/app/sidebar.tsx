@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Users, Wrench, FileText, ClipboardList, Calendar, Package, Truck, FileCheck, Receipt,
   TrendingUp, Settings, LogOut, Zap, Building2, BadgeEuro, ShoppingCart, BookMarked, CalendarDays, Sun, BarChart3,
-  Award, Shield, BookOpen, User
+  Award, Shield, BookOpen, User, FileSignature
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -31,6 +31,7 @@ const nav = [
   { href: "/admin/vacations", label: "Ferie & Permessi", icon: Sun },
   { href: "/admin/incentives", label: "Agevolazioni", icon: Award },
   { href: "/admin/prezzario", label: "Prezzario DEI", icon: BookOpen },
+  { href: "/admin/documenti", label: "Documentazione", icon: FileSignature },
   { href: "/admin/privacy", label: "Privacy & GDPR", icon: Shield },
   { href: "/admin/faq", label: "FAQ & Guide", icon: BookOpen },
   { href: "/admin/reports/kpi", label: "Report KPI", icon: BarChart3 },

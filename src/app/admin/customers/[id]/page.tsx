@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Attachments } from "@/components/app/attachments";
 import { ContactsManager } from "@/components/app/contacts-manager";
+import { CustomerDocumentsSection } from "@/components/app/customer-documents-section";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { HELP } from "@/lib/page-help-data";
 import { Plus, Phone, Mail, MapPin, Zap, Building2, Wrench, FileText, Shield } from "lucide-react";
@@ -135,6 +136,8 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
       </div>
 
       <ContactsManager customerId={customer.id} title="Referenti in loco" />
+
+      <CustomerDocumentsSection tenantId={s.tenantId} customerId={customer.id} />
 
       <Attachments entityType="Customer" entityId={customer.id} title="Allegati cliente (contratti, documenti, foto)" accept=".pdf,image/*,.doc,.docx,.xls,.xlsx" />
     </div>
