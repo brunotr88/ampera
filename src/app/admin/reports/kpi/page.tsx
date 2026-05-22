@@ -80,7 +80,7 @@ function Tile({ label, value, tone }: { label: string; value: any; tone?: "warni
     <Card>
       <CardContent className="p-4">
         <div className="text-xs text-muted-foreground font-medium">{label}</div>
-        <div className={`font-display text-2xl md:text-[28px] font-bold mt-1 ${tone === "warning" ? "text-amber-600" : ""}`}>{value}</div>
+        <div className={`font-display text-2xl md:text-[28px] font-bold mt-1 ${tone === "warning" ? "text-amber-600 dark:text-amber-400" : ""}`}>{value}</div>
       </CardContent>
     </Card>
   );

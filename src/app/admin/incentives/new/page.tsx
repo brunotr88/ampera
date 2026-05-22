@@ -102,15 +102,15 @@ function NewIncentiveForm() {
 
       {def && form.totalAmount > 0 && (
         <Card className="mt-4 bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900">
-          <CardHeader><CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300"><CheckCircle2 className="h-5 w-5" /> Calcolo detrazione</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 dark:text-emerald-300"><CheckCircle2 className="h-5 w-5" /> Calcolo detrazione</CardTitle></CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-3 gap-4 text-center">
               <div><div className="text-xs text-muted-foreground">Investimento</div><div className="font-display text-2xl font-bold">{formatCurrency(form.totalAmount)}</div></div>
-              <div><div className="text-xs text-muted-foreground">Detrazione totale</div><div className="font-display text-2xl font-bold text-emerald-600">{formatCurrency(deductible)}</div></div>
+              <div><div className="text-xs text-muted-foreground">Detrazione totale</div><div className="font-display text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(deductible)}</div></div>
               <div><div className="text-xs text-muted-foreground">Quota annua x {def.yearsRecovery}y</div><div className="font-display text-2xl font-bold text-primary">{formatCurrency(yearly)}</div></div>
             </div>
             {def.maxAmount && form.totalAmount > def.maxAmount && (
-              <div className="mt-3 text-xs text-amber-600 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Massimale superato: detrazione calcolata su €{def.maxAmount}</div>
+              <div className="mt-3 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Massimale superato: detrazione calcolata su €{def.maxAmount}</div>
             )}
           </CardContent>
         </Card>
@@ -133,12 +133,12 @@ function NewIncentiveForm() {
             </div>
             {def.required.invoiceMention && (
               <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg text-xs">
-                <strong>Dicitura in fattura:</strong><br /><code className="text-amber-700 dark:text-amber-300">{def.required.invoiceMention}</code>
+                <strong>Dicitura in fattura:</strong><br /><code className="text-amber-700 dark:text-amber-400 dark:text-amber-300">{def.required.invoiceMention}</code>
               </div>
             )}
             {def.required.bankTransferDescription && (
               <div className="mt-3 p-3 bg-sky-50 dark:bg-sky-950/30 rounded-lg text-xs">
-                <strong>Causale bonifico parlante:</strong><br /><code className="text-sky-700 dark:text-sky-300 whitespace-pre-wrap">{def.required.bankTransferDescription}</code>
+                <strong>Causale bonifico parlante:</strong><br /><code className="text-sky-700 dark:text-sky-400 dark:text-sky-300 whitespace-pre-wrap">{def.required.bankTransferDescription}</code>
               </div>
             )}
           </CardContent>

@@ -34,7 +34,7 @@ export default async function IncentiveDetail({ params }: { params: Promise<{ id
 
       <div className="grid md:grid-cols-3 gap-4">
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Investimento</CardTitle></CardHeader><CardContent><div className="font-display text-2xl font-bold">{formatCurrency(app.totalAmount)}</div></CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-emerald-600">Detrazione ({app.deductiblePercentage}%)</CardTitle></CardHeader><CardContent><div className="font-display text-2xl font-bold text-emerald-600">{formatCurrency(app.deductibleAmount)}</div></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-emerald-600 dark:text-emerald-400">Detrazione ({app.deductiblePercentage}%)</CardTitle></CardHeader><CardContent><div className="font-display text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(app.deductibleAmount)}</div></CardContent></Card>
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Quota annua x {app.yearsOfRecovery}y</CardTitle></CardHeader><CardContent><div className="font-display text-2xl font-bold text-primary">{formatCurrency(app.yearlyAmount)}</div></CardContent></Card>
       </div>
 
@@ -74,7 +74,7 @@ export default async function IncentiveDetail({ params }: { params: Promise<{ id
             {def.required.invoiceMention && (
               <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
                 <div className="text-xs font-semibold mb-1">Dicitura obbligatoria nelle tue fatture:</div>
-                <code className="text-xs text-amber-700 dark:text-amber-300 select-all">{def.required.invoiceMention}</code>
+                <code className="text-xs text-amber-700 dark:text-amber-400 dark:text-amber-300 select-all">{def.required.invoiceMention}</code>
               </div>
             )}
           </CardContent>

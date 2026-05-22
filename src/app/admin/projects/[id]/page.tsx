@@ -28,7 +28,7 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
         </CardContent></Card>
         <Card><CardHeader><CardTitle>Consuntivo materiali</CardTitle></CardHeader><CardContent>
           <div className="text-2xl font-bold">{formatCurrency(consumedMat)}</div>
-          <div className={`text-xs mt-1 ${matPercent > 100 ? "text-destructive" : matPercent > 80 ? "text-amber-600" : "text-muted-foreground"}`}>{matPercent.toFixed(1)}% del budget</div>
+          <div className={`text-xs mt-1 ${matPercent > 100 ? "text-destructive" : matPercent > 80 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>{matPercent.toFixed(1)}% del budget</div>
         </CardContent></Card>
         <Card><CardHeader><CardTitle>Stato</CardTitle></CardHeader><CardContent>
           <Badge variant={p.status === "ACTIVE" ? "success" : "muted"}>{tr(p.status)}</Badge>

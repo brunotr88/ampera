@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { SignaturePadComponent } from "@/components/app/signature-pad";
-import { Pen, Mail, Upload, Link as LinkIcon, Copy, Loader2, CheckCircle2 } from "lucide-react";
+import { Pen, Mail, Upload, Link as LinkIcon, Copy, Loader2, CheckCircle2, Printer } from "lucide-react";
 import { toast } from "sonner";
 
 export function DocumentActions({ doc, customer }: { doc: any; customer: any }) {
@@ -19,7 +19,7 @@ export function DocumentActions({ doc, customer }: { doc: any; customer: any }) 
       <Card>
         <CardHeader><CardTitle>Documento firmato</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <p className="text-emerald-700"><CheckCircle2 className="h-4 w-4 inline" /> Firmato. Le azioni di firma non sono più disponibili.</p>
+          <p className="text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="h-4 w-4 inline" /> Firmato. Le azioni di firma non sono più disponibili.</p>
           <Button variant="outline" size="sm" onClick={async () => {
             if (!confirm("Revocare questo documento? L'azione è irreversibile.")) return;
             const reason = prompt("Motivo della revoca:");
@@ -48,6 +48,7 @@ export function DocumentActions({ doc, customer }: { doc: any; customer: any }) 
       <CardContent className="space-y-2">
         <TabletSignDialog docId={doc.id} defaultName={customer ? (customer.companyName || `${customer.name} ${customer.surname || ""}`) : ""} />
         <OtpSignDialog docId={doc.id} defaultEmail={customer?.email || ""} defaultName={customer ? (customer.companyName || `${customer.name} ${customer.surname || ""}`) : ""} />
+        <PrintAndUploadDialog docId={doc.id} defaultName={customer ? (customer.companyName || `${customer.name} ${customer.surname || ""}`) : ""} />
         <UploadSignDialog docId={doc.id} defaultName={customer ? (customer.companyName || `${customer.name} ${customer.surname || ""}`) : ""} />
 
         <div className="pt-3 border-t mt-3">
@@ -162,7 +163,7 @@ function OtpSignDialog({ docId, defaultEmail, defaultName }: { docId: string; de
             </>
           ) : (
             <>
-              <p className="text-sm text-emerald-700">Codice inviato a {email}. Inserisci il codice ricevuto dal cliente.</p>
+              <p className="text-sm text-emerald-700 dark:text-emerald-400">Codice inviato a {email}. Inserisci il codice ricevuto dal cliente.</p>
               <div><Label>Nome firmatario *</Label><Input value={name} onChange={e => setName(e.target.value)} /></div>
               <div><Label>Codice OTP (6 cifre) *</Label><Input value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))} className="text-2xl tracking-widest text-center font-mono" maxLength={6} /></div>
               <div className="flex gap-2">
@@ -219,6 +220,92 @@ function UploadSignDialog({ docId, defaultName }: { docId: string; defaultName: 
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Carica e firma
           </Button>
         </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function PrintAndUploadDialog({ docId, defaultName }: { docId: string; defaultName: string }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState<"print" | "upload">("print");
+  const [name, setName] = useState(defaultName);
+  const [email, setEmail] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  function openPrint() {
+    window.open(`/print/document/${docId}?print=1`, "_blank");
+    setStep("upload");
+  }
+
+  async function submit() {
+    if (!file) { toast.error("File richiesto"); return; }
+    if (!name) { toast.error("Nome richiesto"); return; }
+    setLoading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("signedByName", name);
+      if (email) fd.append("signedByEmail", email);
+      const res = await fetch(`/api/documents/${docId}/upload-signed`, { method: "POST", body: fd });
+      if (!res.ok) throw new Error((await res.json()).error || "Errore");
+      toast.success("PDF firmato caricato");
+      setOpen(false);
+      setStep("print");
+      router.refresh();
+    } catch (e: any) { toast.error(e.message); } finally { setLoading(false); }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setStep("print"); }}>
+      <DialogTrigger asChild>
+        <Button className="w-full justify-start" variant="outline">
+          <Printer className="h-4 w-4" /> Stampa per firma a mano + ricarica
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{step === "print" ? "Stampa per firma cartacea" : "Carica PDF firmato"}</DialogTitle>
+        </DialogHeader>
+        {step === "print" ? (
+          <div className="space-y-4">
+            <div className="bg-muted/30 p-4 rounded-lg space-y-2 text-sm">
+              <p className="font-semibold">Workflow firma cartacea:</p>
+              <ol className="list-decimal ml-5 space-y-1">
+                <li>Clicca <strong>Stampa documento</strong> qui sotto (si apre in nuova scheda)</li>
+                <li>Fai firmare il cliente sul cartaceo</li>
+                <li>Scansiona o fotografa il documento firmato (PDF preferibile)</li>
+                <li>Torna qui e clicca <strong>Avanti → Ricarica PDF</strong></li>
+              </ol>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={openPrint} className="flex-1">
+                <Printer className="h-4 w-4" /> Stampa documento
+              </Button>
+              <Button variant="outline" onClick={() => setStep("upload")}>
+                Avanti →
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">Carica ora il PDF firmato a mano (scansione o foto).</p>
+            <div><Label>Nome firmatario *</Label><Input value={name} onChange={e => setName(e.target.value)} /></div>
+            <div><Label>Email (opzionale)</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} /></div>
+            <div>
+              <Label>PDF/immagine firmati *</Label>
+              <input type="file" accept="application/pdf,image/*" onChange={e => setFile(e.target.files?.[0] || null)} className="block w-full text-sm" />
+            </div>
+            {file && <p className="text-xs text-muted-foreground">📎 {file.name} ({(file.size / 1024).toFixed(1)} KB)</p>}
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setStep("print")}>← Indietro</Button>
+              <Button onClick={submit} disabled={loading || !file} className="flex-1">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Carica e firma
+              </Button>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

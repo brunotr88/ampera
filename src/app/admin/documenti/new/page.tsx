@@ -95,7 +95,7 @@ function NewDocForm() {
                     </div>
                     <h4 className="font-semibold text-sm">{t.title}</h4>
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-3">{t.description}</p>
-                    {t.legalReference && <p className="text-[10px] text-amber-700 mt-2 italic">{t.legalReference}</p>}
+                    {t.legalReference && <p className="text-[10px] text-amber-700 dark:text-amber-400 mt-2 italic">{t.legalReference}</p>}
                     <div className="flex justify-end mt-3 pt-2 border-t"><ChevronRight className="h-3 w-3 text-muted-foreground" /></div>
                   </button>
                 );

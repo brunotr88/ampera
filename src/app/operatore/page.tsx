@@ -79,8 +79,8 @@ export default async function OperatoreHome() {
                     <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500">
                       {w.scheduledDate ? new Date(w.scheduledDate).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }) : "—"}
                     </span>
-                    {w.priority === "EMERGENCY" && <span className="text-[10px] font-bold uppercase bg-red-100 text-red-700 px-1.5 py-0.5 rounded">EMERGENZA</span>}
-                    {w.priority === "URGENT" && <span className="text-[10px] font-bold uppercase bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">Urgente</span>}
+                    {w.priority === "EMERGENCY" && <span className="text-[10px] font-bold uppercase bg-red-100 text-red-700 dark:text-red-400 px-1.5 py-0.5 rounded">EMERGENZA</span>}
+                    {w.priority === "URGENT" && <span className="text-[10px] font-bold uppercase bg-amber-100 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded">Urgente</span>}
                   </div>
                   <div className="font-semibold text-base">{w.customer.companyName || `${w.customer.name} ${w.customer.surname || ""}`}</div>
                   {w.site && (

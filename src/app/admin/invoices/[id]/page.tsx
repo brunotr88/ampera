@@ -57,8 +57,8 @@ export default async function InvoiceDetail({ params }: { params: Promise<{ id: 
             {inv.stampDuty > 0 && <div className="flex justify-between"><span>Bollo</span><span>{formatCurrency(inv.stampDuty)}</span></div>}
             {inv.withholdingTax > 0 && <div className="flex justify-between"><span>Ritenuta</span><span>-{formatCurrency(inv.withholdingTax)}</span></div>}
             <div className="flex justify-between font-bold text-lg pt-2 border-t"><span>Totale</span><span className="text-primary">{formatCurrency(inv.total)}</span></div>
-            <div className="flex justify-between pt-2"><span>Incassato</span><span className="font-semibold text-emerald-600">{formatCurrency(inv.amountPaid)}</span></div>
-            <div className="flex justify-between"><span>Residuo</span><span className={`font-semibold ${inv.total - inv.amountPaid > 0 ? "text-amber-600" : ""}`}>{formatCurrency(inv.total - inv.amountPaid)}</span></div>
+            <div className="flex justify-between pt-2"><span>Incassato</span><span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatCurrency(inv.amountPaid)}</span></div>
+            <div className="flex justify-between"><span>Residuo</span><span className={`font-semibold ${inv.total - inv.amountPaid > 0 ? "text-amber-600 dark:text-amber-400" : ""}`}>{formatCurrency(inv.total - inv.amountPaid)}</span></div>
             <div className="pt-3 flex flex-col gap-1 text-xs">
               <div className="flex justify-between"><span>SDI:</span><Badge variant="muted">{tr(inv.sdiStatus)}</Badge></div>
               <div className="flex justify-between"><span>Pagamento:</span><Badge variant="warning">{tr(inv.paymentStatus)}</Badge></div>

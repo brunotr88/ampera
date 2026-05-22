@@ -96,7 +96,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
             </div>
             <div>
               <div className="text-xs text-muted-foreground">Valore generato</div>
-              <div className="font-display text-xl font-bold text-emerald-600">{formatCurrency(sumKpi._sum.totalAmount || 0)}</div>
+              <div className="font-display text-xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(sumKpi._sum.totalAmount || 0)}</div>
             </div>
           </CardContent>
         </Card>

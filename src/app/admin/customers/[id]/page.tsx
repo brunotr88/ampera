@@ -88,7 +88,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           <CardHeader><CardTitle>Statistiche</CardTitle></CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Fatturato totale</span><span className="font-semibold">{formatCurrency(totalInvoiced._sum.total || 0)}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Da incassare</span><span className={`font-semibold ${unpaid > 0 ? "text-amber-600" : ""}`}>{formatCurrency(unpaid)}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Da incassare</span><span className={`font-semibold ${unpaid > 0 ? "text-amber-600 dark:text-amber-400" : ""}`}>{formatCurrency(unpaid)}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Impianti</span><span className="font-semibold">{customer.plants.length}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Commesse</span><span className="font-semibold">{customer.projects.length}</span></div>
           </CardContent>

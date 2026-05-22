@@ -93,7 +93,7 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
       key: "amount", label: "Importo", sortable: true,
       className: "text-right font-semibold",
       headerClassName: "text-right",
-      render: e => <span className={e.direction === "IN" ? "text-emerald-600" : "text-amber-600"}>{e.direction === "IN" ? "+" : "-"}{formatCurrency(e.amount)}</span>,
+      render: e => <span className={e.direction === "IN" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}>{e.direction === "IN" ? "+" : "-"}{formatCurrency(e.amount)}</span>,
     },
   ];
 
@@ -119,8 +119,8 @@ export default async function CashbookPage({ searchParams }: { searchParams: Pro
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2 text-emerald-600"><ArrowDown className="h-4 w-4" /> Entrate</CardTitle></CardHeader><CardContent><div className="font-display text-2xl font-bold text-emerald-600">{formatCurrency(totalIn)}</div></CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2 text-amber-600"><ArrowUp className="h-4 w-4" /> Uscite</CardTitle></CardHeader><CardContent><div className="font-display text-2xl font-bold text-amber-600">{formatCurrency(totalOut)}</div></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2 text-emerald-600 dark:text-emerald-400"><ArrowDown className="h-4 w-4" /> Entrate</CardTitle></CardHeader><CardContent><div className="font-display text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(totalIn)}</div></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2 text-amber-600 dark:text-amber-400"><ArrowUp className="h-4 w-4" /> Uscite</CardTitle></CardHeader><CardContent><div className="font-display text-2xl font-bold text-amber-600 dark:text-amber-400">{formatCurrency(totalOut)}</div></CardContent></Card>
       </div>
 
       {total === 0 && !p.q && Object.keys(p.filters).length === 0 ? (

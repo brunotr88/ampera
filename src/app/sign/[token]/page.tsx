@@ -66,7 +66,7 @@ export default function PublicSignPage({ params }: { params: Promise<{ token: st
       <div className="min-h-screen flex items-center justify-center p-6 bg-muted/30">
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
-            <AlertTriangle className="h-10 w-10 mx-auto text-amber-600 mb-3" />
+            <AlertTriangle className="h-10 w-10 mx-auto text-amber-600 dark:text-amber-400 mb-3" />
             <h1 className="font-display text-xl font-bold mb-2">Documento non disponibile</h1>
             <p className="text-sm text-muted-foreground">{error}</p>
           </CardContent>
@@ -89,16 +89,18 @@ export default function PublicSignPage({ params }: { params: Promise<{ token: st
         <Card>
           <CardHeader><CardTitle className="text-base">Contenuto del documento</CardTitle></CardHeader>
           <CardContent>
-            <div className="bg-white text-black border rounded-lg p-6 max-h-[500px] overflow-y-auto" dangerouslySetInnerHTML={{ __html: doc.contentHtml }} />
+            <div className="rounded-lg bg-muted/40 p-4 max-h-[500px] overflow-y-auto">
+              <div className="bg-white text-slate-900 shadow-lg rounded-sm mx-auto max-w-[210mm] p-6 [&_*]:!text-slate-900" dangerouslySetInnerHTML={{ __html: doc.contentHtml }} />
+            </div>
           </CardContent>
         </Card>
 
         {doc.signedAt ? (
-          <Card className="border-emerald-300 bg-emerald-50">
+          <Card className="border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40">
             <CardContent className="p-6 text-center">
-              <CheckCircle2 className="h-10 w-10 mx-auto text-emerald-600 mb-2" />
-              <h2 className="font-display text-xl font-bold text-emerald-700">Documento firmato</h2>
-              <p className="text-sm text-emerald-700 mt-1">Grazie {doc.signedByName}. Hai firmato il documento il {new Date(doc.signedAt).toLocaleString("it-IT")}.</p>
+              <CheckCircle2 className="h-10 w-10 mx-auto text-emerald-600 dark:text-emerald-400 mb-2" />
+              <h2 className="font-display text-xl font-bold text-emerald-700 dark:text-emerald-400">Documento firmato</h2>
+              <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-1">Grazie {doc.signedByName}. Hai firmato il documento il {new Date(doc.signedAt).toLocaleString("it-IT")}.</p>
             </CardContent>
           </Card>
         ) : mode === "choose" ? (
@@ -144,7 +146,7 @@ export default function PublicSignPage({ params }: { params: Promise<{ token: st
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-emerald-700">Codice inviato a {email}. Controlla la tua casella (anche spam).</p>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-400">Codice inviato a {email}. Controlla la tua casella (anche spam).</p>
                   <div><Label>Il tuo nome *</Label><Input value={name} onChange={e => setName(e.target.value)} /></div>
                   <div><Label>Codice OTP (6 cifre) *</Label><Input value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))} className="text-3xl tracking-widest text-center font-mono" maxLength={6} /></div>
                   <div className="flex gap-2">

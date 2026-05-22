@@ -115,7 +115,7 @@ export default async function DashboardPage() {
               <ul className="divide-y divide-border">
                 {contractsDue.map(c => (
                   <li key={c.id} className="py-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center"><Truck className="h-4 w-4" /></div>
+                    <div className="h-9 w-9 rounded-lg bg-amber-50 text-amber-700 dark:text-amber-400 flex items-center justify-center"><Truck className="h-4 w-4" /></div>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium truncate">{c.customer.companyName || c.customer.name}</div>
                       <div className="text-xs text-muted-foreground">{c.name}</div>

@@ -50,7 +50,7 @@ export default async function DicoDetail({ params, searchParams }: { params: Pro
               <div className="font-display text-2xl font-bold">{d.issueDate ? formatDate(d.issueDate) : "—"}</div>
             </CardContent></Card>
             <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Completezza</CardTitle></CardHeader><CardContent>
-              <div className={`font-display text-2xl font-bold ${allChecked ? "text-emerald-600" : "text-amber-600"}`}>
+              <div className={`font-display text-2xl font-bold ${allChecked ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
                 {checkedCount}/{totalCount}
               </div>
             </CardContent></Card>

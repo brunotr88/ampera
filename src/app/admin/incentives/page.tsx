@@ -90,7 +90,7 @@ export default async function IncentivesPage({ searchParams }: { searchParams: P
     },
     { key: "description", label: "Descrizione", render: a => <span className="line-clamp-2">{a.workDescription}</span> },
     { key: "totalAmount", label: "Investimento", sortable: true, className: "text-right", headerClassName: "text-right", render: a => formatCurrency(a.totalAmount) },
-    { key: "deductibleAmount", label: "Detrazione", sortable: true, className: "text-right font-semibold text-emerald-600", headerClassName: "text-right", render: a => `${formatCurrency(a.deductibleAmount)} (${a.deductiblePercentage}%)` },
+    { key: "deductibleAmount", label: "Detrazione", sortable: true, className: "text-right font-semibold text-emerald-600 dark:text-emerald-400", headerClassName: "text-right", render: a => `${formatCurrency(a.deductibleAmount)} (${a.deductiblePercentage}%)` },
     {
       key: "status", label: "Stato", sortable: true,
       filter: { type: "select", placeholder: "Tutti", options: [
@@ -121,8 +121,8 @@ export default async function IncentivesPage({ searchParams }: { searchParams: P
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Investimento totale</CardTitle></CardHeader><CardContent>
           <div className="font-display text-2xl font-bold">{formatCurrency(totalSpent)}</div>
         </CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-emerald-600">Detrazione totale</CardTitle></CardHeader><CardContent>
-          <div className="font-display text-2xl font-bold text-emerald-600">{formatCurrency(totalDeductible)}</div>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-emerald-600 dark:text-emerald-400">Detrazione totale</CardTitle></CardHeader><CardContent>
+          <div className="font-display text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(totalDeductible)}</div>
         </CardContent></Card>
       </div>
 
@@ -159,9 +159,9 @@ export default async function IncentivesPage({ searchParams }: { searchParams: P
                   <div className="flex items-center gap-3 mt-3 pt-2 border-t text-[11px] text-muted-foreground">
                     {d.maxAmount && <span>Max {formatCurrency(d.maxAmount)}</span>}
                     <span>{d.yearsRecovery}y recupero</span>
-                    {d.required.enéa && <span className="text-amber-600">ENEA</span>}
-                    {d.required.asseveration && <span className="text-amber-600">Asseverazione</span>}
-                    {d.required.cessionAllowed && <span className="text-emerald-600">Cessione OK</span>}
+                    {d.required.enéa && <span className="text-amber-600 dark:text-amber-400">ENEA</span>}
+                    {d.required.asseveration && <span className="text-amber-600 dark:text-amber-400">Asseverazione</span>}
+                    {d.required.cessionAllowed && <span className="text-emerald-600 dark:text-emerald-400">Cessione OK</span>}
                   </div>
                 </Link>
               ))}

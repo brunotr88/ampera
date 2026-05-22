@@ -142,15 +142,15 @@ export default async function VehiclesPage({ searchParams }: { searchParams: Pro
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Truck className="h-4 w-4" /> Totali</CardTitle></CardHeader><CardContent>
           <div className="font-display text-2xl font-bold">{allKpi.length}</div>
         </CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className={`text-sm flex items-center gap-2 ${insExpired > 0 ? "text-red-600" : "text-amber-600"}`}><ShieldCheck className="h-4 w-4" /> Assicurazione</CardTitle></CardHeader><CardContent>
+        <Card><CardHeader className="pb-2"><CardTitle className={`text-sm flex items-center gap-2 ${insExpired > 0 ? "text-red-600 dark:text-red-400" : "text-amber-600 dark:text-amber-400"}`}><ShieldCheck className="h-4 w-4" /> Assicurazione</CardTitle></CardHeader><CardContent>
           <div className="font-display text-2xl font-bold">{insExpired + insExpiring}</div>
           <div className="text-xs text-muted-foreground">{insExpired} scaduti, {insExpiring} in scadenza</div>
         </CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2 text-amber-600"><Calendar className="h-4 w-4" /> Revisione</CardTitle></CardHeader><CardContent>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2 text-amber-600 dark:text-amber-400"><Calendar className="h-4 w-4" /> Revisione</CardTitle></CardHeader><CardContent>
           <div className="font-display text-2xl font-bold">{inspectionExpiring}</div>
           <div className="text-xs text-muted-foreground">in scadenza 60 gg</div>
         </CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2 text-blue-600"><Wrench className="h-4 w-4" /> Tagliando</CardTitle></CardHeader><CardContent>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2 text-blue-600 dark:text-blue-400"><Wrench className="h-4 w-4" /> Tagliando</CardTitle></CardHeader><CardContent>
           <div className="font-display text-2xl font-bold">{maintExpiring}</div>
           <div className="text-xs text-muted-foreground">tagliandi in scadenza</div>
         </CardContent></Card>

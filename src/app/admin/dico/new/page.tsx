@@ -84,7 +84,7 @@ function NewDicoForm() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Checklist conformità DM 37/08</span>
-            <span className={`text-sm font-normal ${isComplete ? "text-emerald-600" : "text-amber-600"}`}>
+            <span className={`text-sm font-normal ${isComplete ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
               {completedCount}/{DICO_CHECKLIST.length} {isComplete ? "✓ COMPLETA" : "incompleta"}
             </span>
           </CardTitle>

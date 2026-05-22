@@ -82,7 +82,7 @@ export function ImportCard({ priceListId }: { priceListId: string }) {
             </div>
             {result.errors?.length > 0 && (
               <details className="mt-2">
-                <summary className="text-xs cursor-pointer text-amber-700">⚠ {result.errors.length} errori</summary>
+                <summary className="text-xs cursor-pointer text-amber-700 dark:text-amber-400">⚠ {result.errors.length} errori</summary>
                 <ul className="text-xs mt-1 space-y-0.5">
                   {result.errors.map((e: string, i: number) => <li key={i}>{e}</li>)}
                 </ul>

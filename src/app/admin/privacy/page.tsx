@@ -107,7 +107,7 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
               <h3 className="font-semibold text-sm">{t.title}</h3>
               <p className="text-xs text-muted-foreground mt-1 line-clamp-3">{t.description}</p>
               <div className="flex items-center justify-between mt-3 pt-2 border-t text-[10px] text-muted-foreground">
-                {t.consentRequired ? <span className="text-amber-600">Consenso richiesto</span> : <span>Solo informativa</span>}
+                {t.consentRequired ? <span className="text-amber-600 dark:text-amber-400">Consenso richiesto</span> : <span>Solo informativa</span>}
                 <ChevronRight className="h-3 w-3" />
               </div>
             </Link>

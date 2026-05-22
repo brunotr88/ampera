@@ -55,8 +55,8 @@ function NewCashEntryForm() {
           <div>
             <Label>Direzione *</Label>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setForm({ ...form, direction: "IN" })} className={`flex-1 px-4 py-3 rounded-lg border font-semibold ${form.direction === "IN" ? "bg-emerald-50 border-emerald-300 text-emerald-700" : "bg-card"}`}>+ Entrata</button>
-              <button type="button" onClick={() => setForm({ ...form, direction: "OUT" })} className={`flex-1 px-4 py-3 rounded-lg border font-semibold ${form.direction === "OUT" ? "bg-amber-50 border-amber-300 text-amber-700" : "bg-card"}`}>- Uscita</button>
+              <button type="button" onClick={() => setForm({ ...form, direction: "IN" })} className={`flex-1 px-4 py-3 rounded-lg border font-semibold ${form.direction === "IN" ? "bg-emerald-50 border-emerald-300 text-emerald-700 dark:text-emerald-400" : "bg-card"}`}>+ Entrata</button>
+              <button type="button" onClick={() => setForm({ ...form, direction: "OUT" })} className={`flex-1 px-4 py-3 rounded-lg border font-semibold ${form.direction === "OUT" ? "bg-amber-50 border-amber-300 text-amber-700 dark:text-amber-400" : "bg-card"}`}>- Uscita</button>
             </div>
           </div>
           <div>

@@ -28,10 +28,10 @@ type Line = {
 };
 
 const LINE_TYPE_LABELS: Record<string, { label: string; icon: any; color: string }> = {
-  WAREHOUSE: { label: "Magazzino", icon: Package, color: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300" },
+  WAREHOUSE: { label: "Magazzino", icon: Package, color: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 dark:text-emerald-300" },
   ASSET: { label: "Cespite", icon: Building2, color: "bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300" },
-  EXPENSE: { label: "Costo", icon: Receipt, color: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300" },
-  CONSUMABLE: { label: "Consumo", icon: Receipt, color: "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300" },
+  EXPENSE: { label: "Costo", icon: Receipt, color: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 dark:text-amber-300" },
+  CONSUMABLE: { label: "Consumo", icon: Receipt, color: "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 dark:text-sky-300" },
 };
 
 export default function NewPurchaseInvoicePage() {

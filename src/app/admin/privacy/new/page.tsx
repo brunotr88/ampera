@@ -142,9 +142,9 @@ function NewPrivacyForm() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {[
-              { v: "customer", l: "Cliente", icon: Users, color: "text-emerald-600" },
-              { v: "supplier", l: "Fornitore", icon: Building2, color: "text-amber-600" },
-              { v: "user", l: "Operatore", icon: User, color: "text-sky-600" },
+              { v: "customer", l: "Cliente", icon: Users, color: "text-emerald-600 dark:text-emerald-400" },
+              { v: "supplier", l: "Fornitore", icon: Building2, color: "text-amber-600 dark:text-amber-400" },
+              { v: "user", l: "Operatore", icon: User, color: "text-sky-600 dark:text-sky-400" },
               { v: "manual", l: "Manuale", icon: Shield, color: "text-purple-600" },
             ].map(o => {
               const Icon = o.icon;
@@ -191,7 +191,7 @@ function NewPrivacyForm() {
                     {selectedSubject.fiscalCode && <span>CF {selectedSubject.fiscalCode}</span>}
                     {selectedSubject.role && <span>{tr(selectedSubject.role)}</span>}
                   </div>
-                  {autoFilled && <div className="mt-2 text-xs text-emerald-700 dark:text-emerald-300">✓ Dati auto-compilati pronti per il documento</div>}
+                  {autoFilled && <div className="mt-2 text-xs text-emerald-700 dark:text-emerald-400 dark:text-emerald-300">✓ Dati auto-compilati pronti per il documento</div>}
                 </div>
                 <button type="button" onClick={() => { setSubjectId(""); setSelectedSubject(null); setAutoFilled(null); setSubjectSearch(""); }} className="text-muted-foreground"><X className="h-4 w-4" /></button>
               </div>

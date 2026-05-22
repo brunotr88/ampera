@@ -104,7 +104,7 @@ function NewQuoteForm() {
                   {l.code && (
                     <div className="text-[10px] text-muted-foreground font-mono">
                       📖 Prezzario: <span className="font-semibold">{l.code}</span>
-                      {l.priceListEntryId && <button type="button" className="ml-2 text-amber-600 hover:underline" onClick={() => updateLine(i, { priceListEntryId: null, code: undefined } as any)}>scollega</button>}
+                      {l.priceListEntryId && <button type="button" className="ml-2 text-amber-600 dark:text-amber-400 hover:underline" onClick={() => updateLine(i, { priceListEntryId: null, code: undefined } as any)}>scollega</button>}
                     </div>
                   )}
                   <div className="grid grid-cols-12 gap-2 items-start">

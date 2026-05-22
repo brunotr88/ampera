@@ -96,8 +96,8 @@ export default function WarehouseInventoryPage() {
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Package className="h-4 w-4" /> Articoli</CardTitle></CardHeader><CardContent>
           <div className="font-display text-2xl font-bold">{totalItems}</div>
         </CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2 text-amber-600"><AlertTriangle className="h-4 w-4" /> Sotto scorta</CardTitle></CardHeader><CardContent>
-          <div className="font-display text-2xl font-bold text-amber-600">{lowStock}</div>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2 text-amber-600 dark:text-amber-400"><AlertTriangle className="h-4 w-4" /> Sotto scorta</CardTitle></CardHeader><CardContent>
+          <div className="font-display text-2xl font-bold text-amber-600 dark:text-amber-400">{lowStock}</div>
         </CardContent></Card>
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Valore stock</CardTitle></CardHeader><CardContent>
           <div className="font-display text-2xl font-bold">{formatCurrency(totalValue)}</div>
@@ -175,9 +175,9 @@ export default function WarehouseInventoryPage() {
                       </td>
                       <td className="text-xs">{item.category && <Badge variant="muted">{item.category}</Badge>}</td>
                       <td className="text-right text-xs">{item.stockMin}</td>
-                      <td className={`text-right font-bold ${item.belowMin ? "text-amber-600" : "text-emerald-600"}`}>
+                      <td className={`text-right font-bold ${item.belowMin ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"}`}>
                         {item.totalStock.toLocaleString("it-IT")} {item.unit}
-                        {item.belowMin && <div className="text-[10px] text-amber-600">⚠ sotto scorta</div>}
+                        {item.belowMin && <div className="text-[10px] text-amber-600 dark:text-amber-400">⚠ sotto scorta</div>}
                       </td>
                       {warehouses.map(w => {
                         const pw = item.perWarehouse.find(p => p.warehouseId === w.id);

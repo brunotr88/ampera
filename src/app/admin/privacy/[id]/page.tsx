@@ -123,7 +123,7 @@ export default function PrivacyDocDetail({ params }: { params: Promise<{ id: str
           <CardContent>
             {statusBadge}
             {doc.signedAt && <div className="text-xs text-muted-foreground mt-1">Firmato il {formatDateTime(doc.signedAt)}</div>}
-            {doc.revokedAt && <div className="text-xs text-red-600 mt-1">Revocato il {formatDateTime(doc.revokedAt)}{doc.revokedReason ? `: ${doc.revokedReason}` : ""}</div>}
+            {doc.revokedAt && <div className="text-xs text-red-600 dark:text-red-400 mt-1">Revocato il {formatDateTime(doc.revokedAt)}{doc.revokedReason ? `: ${doc.revokedReason}` : ""}</div>}
             {doc.expiresAt && <div className="text-xs text-muted-foreground mt-1">Scade il {formatDateTime(doc.expiresAt)}</div>}
           </CardContent>
         </Card>
@@ -217,7 +217,7 @@ export default function PrivacyDocDetail({ params }: { params: Promise<{ id: str
         <DialogContent>
           <DialogHeader><DialogTitle>Revoca documento</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div className="text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/30 p-3 rounded">
+            <div className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 p-3 rounded">
               ⚠ La revoca e tracciata in audit log e non puo essere annullata. Il documento resta archiviato ma marcato come "revocato".
             </div>
             <div><Label>Motivo revoca *</Label><Textarea rows={3} value={revokeReason} onChange={e => setRevokeReason(e.target.value)} placeholder="Es. Cliente ha revocato il consenso marketing in data..." /></div>

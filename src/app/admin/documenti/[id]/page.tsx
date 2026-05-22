@@ -40,7 +40,9 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
           <Card>
             <CardHeader><CardTitle>Contenuto documento</CardTitle></CardHeader>
             <CardContent>
-              <div className="bg-white text-black border rounded-lg p-6 max-h-[600px] overflow-y-auto" dangerouslySetInnerHTML={{ __html: doc.contentHtml }} />
+              <div className="rounded-lg bg-muted/40 p-4 max-h-[600px] overflow-y-auto">
+                <div className="bg-white text-slate-900 shadow-lg rounded-sm mx-auto max-w-[210mm] p-8 [&_*]:!text-slate-900" dangerouslySetInnerHTML={{ __html: doc.contentHtml }} />
+              </div>
             </CardContent>
           </Card>
 
@@ -59,8 +61,10 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
                   </div>
                 )}
                 {doc.signatureFileUrl && (
-                  <div>
-                    <Link href={doc.signatureFileUrl} target="_blank" className="text-primary hover:underline text-xs">📎 Scarica PDF firmato</Link>
+                  <div className="pt-2 border-t border-emerald-200 dark:border-emerald-900">
+                    <Button asChild variant="default" size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                      <Link href={doc.signatureFileUrl} target="_blank">📎 Apri PDF firmato (nuova scheda)</Link>
+                    </Button>
                   </div>
                 )}
                 {doc.signatureMeta && (

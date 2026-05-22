@@ -73,8 +73,8 @@ export default async function ReportDetail({ params, searchParams }: { params: P
                 <div className="pt-3 flex flex-col gap-2 text-xs">
                   <div className="flex justify-between"><span>Stato:</span><Badge variant={r.status === "SUBMITTED" ? "success" : "muted"}>{tr(r.status)}</Badge></div>
                   {r.signedAt && <div className="flex justify-between"><span>Firmato:</span><span>{formatDateTime(r.signedAt)}</span></div>}
-                  {r.immutable && <div className="text-amber-600 flex items-center gap-1">🔒 Documento firmato, non modificabile</div>}
-                  {r.customerEmailSent && <div className="flex items-center gap-1 text-emerald-600"><Mail className="h-3 w-3" /> Email inviata</div>}
+                  {r.immutable && <div className="text-amber-600 dark:text-amber-400 flex items-center gap-1">🔒 Documento firmato, non modificabile</div>}
+                  {r.customerEmailSent && <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400"><Mail className="h-3 w-3" /> Email inviata</div>}
                 </div>
               </CardContent>
             </Card>
