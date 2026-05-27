@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Attachments } from "@/components/app/attachments";
+import { WorkOrderTrackingCard } from "@/components/app/work-order-tracking-card";
 import { formatDateTime } from "@/lib/utils";
 
 export default async function WODetail({ params }: { params: Promise<{ id: string }> }) {
@@ -36,20 +37,24 @@ export default async function WODetail({ params }: { params: Promise<{ id: strin
             {wo.description && <div className="whitespace-pre-wrap pt-2 border-t border-border">{wo.description}</div>}
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader><CardTitle>Rapportino</CardTitle></CardHeader>
-          <CardContent>
-            {wo.report ? (
-              <div className="text-sm">
-                <div>#{wo.report.code}</div>
-                <Badge variant={wo.report.status === "SUBMITTED" ? "success" : "muted"}>{wo.report.status}</Badge>
-                <Button asChild className="mt-3 w-full" size="sm"><Link href={`/admin/reports/${wo.report.id}`}>Apri rapportino</Link></Button>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">Il tecnico genererà il rapportino dall'app mobile a fine intervento.</p>
-            )}
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Rapportino</CardTitle></CardHeader>
+            <CardContent>
+              {wo.report ? (
+                <div className="text-sm">
+                  <div>#{wo.report.code}</div>
+                  <Badge variant={wo.report.status === "SUBMITTED" ? "success" : "muted"}>{wo.report.status}</Badge>
+                  <Button asChild className="mt-3 w-full" size="sm"><Link href={`/admin/reports/${wo.report.id}`}>Apri rapportino</Link></Button>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Il tecnico genererà il rapportino dall'app mobile a fine intervento.</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <WorkOrderTrackingCard workOrderId={wo.id} initialHash={wo.trackingHash} initialCustomStateId={wo.customStateId} />
+        </div>
       </div>
 
       <Attachments entityType="WorkOrder" entityId={wo.id} title="Allegati intervento" accept=".pdf,image/*" />

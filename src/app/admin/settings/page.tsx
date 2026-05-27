@@ -132,6 +132,14 @@ export default function SettingsPage() {
       </Card>
 
       <Card>
+        <CardHeader><CardTitle>Personalizzazione workflow</CardTitle></CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          <p className="text-muted-foreground">Configura gli stati di avanzamento di interventi, commesse e rapportini. Triggera email automatiche al cliente al passaggio di stato. Genera link tracking pubblici per il cliente.</p>
+          <Button asChild variant="outline" size="sm"><a href="/admin/settings/workflow">Gestisci stati workflow →</a></Button>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader><CardTitle className="flex items-center gap-2"><KeyRound className="h-4 w-4" /> Sicurezza & API</CardTitle></CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>2FA TOTP: configurabile in {`/admin/security`} (in arrivo) - per ora cambiare password via /admin/profile.</p>

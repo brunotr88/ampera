@@ -85,6 +85,7 @@ model Tenant {
   priceListEntries PriceListEntry[]
   ampDocs      AmperaDocument[]
   ampDocTemplates DocumentTemplate[]
+  workflowStates WorkflowState[]
 }
 
 enum Plan {
@@ -631,6 +632,9 @@ model WorkOrder {
   contactPerson     String?
   contactId         String?
   cancelReason      String?
+  trackingHash      String?         @unique
+  customStateId     String?
+  customerEmailNotifiedAt DateTime?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   deletedAt         DateTime?
@@ -2057,4 +2061,33 @@ model AmperaDocument {
   @@index([status])
   @@index([category])
   @@index([shareToken])
+}
+
+// =====================================================================
+// WORKFLOW STATI CONFIGURABILI + TRACKING PUBBLICO
+// =====================================================================
+
+model WorkflowState {
+  id                   String   @id @default(cuid())
+  tenantId             String
+  scope                String   // WORKORDER | PROJECT | REPORT
+  name                 String
+  description          String?
+  color                String   @default("#3B82F6")
+  icon                 String?
+  percentage           Int      @default(0)
+  sortOrder            Int      @default(0)
+  isFinal              Boolean  @default(false)
+  isActive             Boolean  @default(true)
+  triggersClientEmail  Boolean  @default(false)
+  triggersInternalNote Boolean  @default(false)
+  emailSubject         String?
+  emailBodyHtml        String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  tenant               Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, scope, name])
+  @@index([tenantId, scope])
 }
