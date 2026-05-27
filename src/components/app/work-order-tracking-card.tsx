@@ -54,8 +54,23 @@ export function WorkOrderTrackingCard({ workOrderId, initialHash, initialCustomS
         body: JSON.stringify({ customStateId: stateId || null }),
       });
       if (!r.ok) throw new Error("Errore");
+      const data = await r.json();
       setCurrentStateId(stateId || null);
-      toast.success("Stato aggiornato");
+
+      if (data.notification?.notified) {
+        toast.success(`Stato aggiornato. ✉ Email inviata a ${data.notification.email}`);
+        // Auto-fetch hash perché potrebbe essere stato generato dal notify
+        if (!hash) {
+          const wo = await fetch(`/api/work-orders/${workOrderId}`).then(r => r.json()).catch(() => null);
+          if (wo?.workOrder?.trackingHash) setHash(wo.workOrder.trackingHash);
+        }
+      } else if (data.notification?.reason === "no-customer-email") {
+        toast.warning("Stato aggiornato. Email non inviata: cliente senza email");
+      } else if (data.notification?.reason?.startsWith("email-failed")) {
+        toast.error(`Stato aggiornato. Email fallita: ${data.notification.reason}`);
+      } else {
+        toast.success("Stato aggiornato");
+      }
     } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
   }
 
